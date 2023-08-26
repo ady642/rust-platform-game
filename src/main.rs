@@ -1,5 +1,6 @@
 mod platforms;
 mod animation;
+mod sprite_manager;
 
 use std::time::Duration;
 use platforms::PlatformsPlugin;
@@ -9,6 +10,7 @@ use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_rapier2d::prelude::*;
 use crate::animation::Animation;
+use crate::sprite_manager::SpriteManagerPlugin;
 
 const WINDOW_WIDTH: f32 = 1024.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -28,19 +30,18 @@ const PLAYER_VELOCITY_Y: f32 = 850.0;
 
 const MAX_JUMP_HEIGHT: f32 = 230.0;
 
-const SPRITESHEET_COLS: usize = 7;
-const SPRITESHEET_ROWS: usize = 8;
-const SPRITE_TILE_WIDTH: f32 = 128.0;
-const SPRITE_TILE_HEIGHT: f32 = 256.0;
 const SPRITE_IDX_STAND: usize = 28;
-
-const SPRITE_RENDER_WIDTH: f32 = 64.0;
-const SPRITE_RENDER_HEIGHT: f32 = 128.0;
 
 const SPRITE_IDX_WALKING: &[usize] = &[7, 0];
 const CYCLE_DELAY: Duration = Duration::from_millis(70);
 
 const SPRITE_IDX_JUMP: usize = 35;
+
+#[derive(Component)]
+enum Direction {
+    Right,
+    Left,
+}
 
 #[derive(Component)]
 struct Jump(f32);
@@ -59,7 +60,8 @@ fn main() {
         }),
         RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.0),
         PlatformsPlugin,
-        AnimationPlugin
+        AnimationPlugin,
+        SpriteManagerPlugin
         ))
         .add_systems(Startup,setup)
         .add_systems(Update,(
@@ -78,8 +80,6 @@ fn main() {
 
 fn setup(
     mut commands: Commands,
-    mut atlases: ResMut<Assets<TextureAtlas>>,
-    server: Res<AssetServer>
 ) {
     commands
         .spawn(SpriteBundle {
@@ -96,41 +96,6 @@ fn setup(
         })
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(0.5, 0.5));
-
-    let image_handle: Handle<Image> = server.load("spritesheets/spritesheet_players.png");
-    let texture_atlas = TextureAtlas::from_grid(
-        image_handle,
-        Vec2::new(SPRITE_TILE_WIDTH, SPRITE_TILE_HEIGHT),
-        SPRITESHEET_COLS,
-        SPRITESHEET_ROWS,
-        None,
-        None,
-    );
-    let atlas_handle = atlases.add(texture_atlas);
-
-    commands
-        .spawn(SpriteSheetBundle {
-            sprite: TextureAtlasSprite::new(SPRITE_IDX_STAND),
-            texture_atlas: atlas_handle,
-            transform: Transform {
-                translation: Vec3::new(WINDOW_LEFT_X + 100.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
-                scale: Vec3::new( // scale added
-                                  SPRITE_RENDER_WIDTH / SPRITE_TILE_WIDTH,
-                                  SPRITE_RENDER_HEIGHT / SPRITE_TILE_HEIGHT,
-                                  1.0,
-                ),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::KinematicPositionBased)
-        .insert(Collider::cuboid(
-            SPRITE_TILE_WIDTH / 2.0,
-            SPRITE_TILE_HEIGHT / 2.0)
-        )
-        .insert(KinematicCharacterController::default())
-        .insert(Direction::Right); // default direction
-
 
     commands.spawn(Camera2dBundle::default());
 }
@@ -272,11 +237,6 @@ fn apply_jump_sprite(
     }
 }
 
-#[derive(Component)]
-enum Direction {
-    Right,
-    Left,
-}
 
 fn update_direction(
     mut commands: Commands,
