@@ -29,13 +29,9 @@ const PLAYER_VELOCITY_X: f32 = 400.0;
 const PLAYER_VELOCITY_Y: f32 = 850.0;
 
 const MAX_JUMP_HEIGHT: f32 = 230.0;
-
-const SPRITE_IDX_STAND: usize = 28;
-
-const SPRITE_IDX_WALKING: &[usize] = &[7, 0];
+const SPRITE_IDX_WALKING: &[usize] = &[0, 4, 3];
 const CYCLE_DELAY: Duration = Duration::from_millis(70);
 
-const SPRITE_IDX_JUMP: usize = 35;
 
 #[derive(Component)]
 enum Direction {
@@ -70,8 +66,6 @@ fn main() {
             rise,
             fall,
             apply_movement_animation,
-            apply_idle_sprite,
-            apply_jump_sprite,
             update_direction,
             update_sprite_direction // new system added
     )) // new system added
@@ -199,45 +193,6 @@ fn apply_movement_animation(
     }
 }
 
-fn apply_idle_sprite(
-    mut commands: Commands,
-    mut query: Query<(
-        Entity,
-        &KinematicCharacterControllerOutput,
-        &mut TextureAtlasSprite,
-    )>,
-) {
-    if query.is_empty() {
-        return;
-    }
-
-    let (player, output, mut sprite) = query.single_mut();
-    if output.desired_translation.x == 0.0 && output.grounded {
-        commands.entity(player).remove::<Animation>();
-        sprite.index = SPRITE_IDX_STAND
-    }
-}
-
-fn apply_jump_sprite(
-    mut commands: Commands,
-    mut query: Query<(
-        Entity,
-        &KinematicCharacterControllerOutput,
-        &mut TextureAtlasSprite,
-    )>,
-) {
-    if query.is_empty() {
-        return;
-    }
-
-    let (player, output, mut sprite) = query.single_mut();
-    if !output.grounded {
-        commands.entity(player).remove::<Animation>();
-        sprite.index = SPRITE_IDX_JUMP
-    }
-}
-
-
 fn update_direction(
     mut commands: Commands,
     query: Query<(Entity, &KinematicCharacterControllerOutput)>,
@@ -263,7 +218,7 @@ fn update_sprite_direction(mut query: Query<(&mut TextureAtlasSprite, &Direction
     let (mut sprite, direction) = query.single_mut();
 
     match direction {
-        Direction::Right => sprite.flip_x = false,
-        Direction::Left => sprite.flip_x = true,
+        Direction::Right => sprite.flip_x = true,
+        Direction::Left => sprite.flip_x = false,
     }
 }
