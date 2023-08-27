@@ -1,15 +1,15 @@
-mod platforms;
 mod animation;
 mod sprite_manager;
+mod physics;
+mod entities { pub mod objects; }
 
-use std::time::Duration;
-use platforms::PlatformsPlugin;
+use entities::objects::ObjectsPlugin;
+use physics::PhysicsPlugin;
 use animation::AnimationPlugin;
 
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_rapier2d::prelude::*;
-use crate::animation::Animation;
 use crate::sprite_manager::SpriteManagerPlugin;
 
 const WINDOW_WIDTH: f32 = 1024.0;
@@ -23,15 +23,6 @@ const COLOR_BACKGROUND: Color = Color::rgb(0.29, 0.31, 0.41);
 const FLOOR_THICKNESS: f32 = 10.0;
 
 const COLOR_FLOOR: Color = Color::rgb(0.45, 0.55, 0.66);
-
-const PLAYER_VELOCITY_X: f32 = 400.0;
-
-const PLAYER_VELOCITY_Y: f32 = 850.0;
-
-const MAX_JUMP_HEIGHT: f32 = 230.0;
-const SPRITE_IDX_WALKING: &[usize] = &[0, 4, 3];
-const CYCLE_DELAY: Duration = Duration::from_millis(70);
-
 
 #[derive(Component)]
 enum Direction {
@@ -54,20 +45,13 @@ fn main() {
             }),
             ..Default::default()
         }),
-        RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.0),
-        PlatformsPlugin,
-        AnimationPlugin,
-        SpriteManagerPlugin
+            RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.0),
+            ObjectsPlugin,
+            AnimationPlugin,
+            SpriteManagerPlugin,
+            PhysicsPlugin
         ))
-        .add_systems(Startup,setup)
-        .add_systems(Update,(
-            movement,
-            jump,
-            rise,
-            fall,
-            apply_movement_animation,
-            update_direction,
-    )) // new system added
+        .add_systems(Startup,setup) // new system added
         .run();
 }
 
@@ -93,118 +77,3 @@ fn setup(
     commands.spawn(Camera2dBundle::default());
 }
 
-fn movement(
-    input: Res<Input<KeyCode>>,
-    time: Res<Time>,
-    mut query: Query<&mut KinematicCharacterController>,
-) {
-    let mut player = query.single_mut();
-
-    let mut movement = 0.0;
-
-    if input.pressed(KeyCode::Right) {
-        movement += time.delta_seconds() * PLAYER_VELOCITY_X;
-    }
-
-    if input.pressed(KeyCode::Left) {
-        movement += time.delta_seconds() * PLAYER_VELOCITY_X * -1.0;
-    }
-
-    match player.translation {
-        Some(vec) => player.translation = Some(Vec2::new(movement, vec.y)), // update if it already exists
-        None => player.translation = Some(Vec2::new(movement, 0.0)),
-    }
-}
-
-fn jump(
-    input: Res<Input<KeyCode>>,
-    mut commands: Commands,
-    query: Query<
-        (Entity, &KinematicCharacterControllerOutput),
-        (With<KinematicCharacterController>, Without<Jump>),
-    >,
-) {
-    if query.is_empty() {
-        return;
-    }
-
-    let (player, output) = query.single();
-
-    if input.pressed(KeyCode::Up) && output.grounded {
-        commands.entity(player).insert(Jump(0.0));
-    }
-}
-fn rise(
-    mut commands: Commands,
-    time: Res<Time>,
-    mut query: Query<(Entity, &mut KinematicCharacterController, &mut Jump)>,
-) {
-    if query.is_empty() {
-        return;
-    }
-
-    let (entity, mut player, mut jump) = query.single_mut();
-
-    let mut movement = time.delta().as_secs_f32() * PLAYER_VELOCITY_Y;
-
-    if movement + jump.0 >= MAX_JUMP_HEIGHT {
-        movement = MAX_JUMP_HEIGHT - jump.0;
-        commands.entity(entity).remove::<Jump>();
-    }
-
-    jump.0 += movement;
-
-    match player.translation {
-        Some(vec) => player.translation = Some(Vec2::new(vec.x, movement)),
-        None => player.translation = Some(Vec2::new(0.0, movement)),
-    }
-}
-
-fn fall(time: Res<Time>, mut query: Query<&mut KinematicCharacterController, Without<Jump>>) {
-    if query.is_empty() {
-        return;
-    }
-
-    let mut player = query.single_mut();
-
-    // I am using two-thirds of the Y-velocity since I want the character to fall slower than it rises
-    let movement = time.delta().as_secs_f32() * (PLAYER_VELOCITY_Y / 1.5) * -1.0;
-
-    match player.translation {
-        Some(vec) => player.translation = Some(Vec2::new(vec.x, movement)),
-        None => player.translation = Some(Vec2::new(0.0, movement)),
-    }
-}
-
-fn apply_movement_animation(
-    mut commands: Commands,
-    query: Query<(Entity, &KinematicCharacterControllerOutput), Without<Animation>>,
-) {
-    if query.is_empty() {
-        return;
-    }
-
-    let (player, output) = query.single();
-    if output.desired_translation.x != 0.0 && output.grounded {
-        commands
-            .entity(player)
-            .insert(Animation::new(SPRITE_IDX_WALKING, CYCLE_DELAY));
-    }
-}
-
-fn update_direction(
-    mut commands: Commands,
-    query: Query<(Entity, &KinematicCharacterControllerOutput)>,
-) {
-    if query.is_empty() {
-        return;
-    }
-
-    let (player, output) = query.single();
-
-    if output.desired_translation.x > 0.0 {
-        commands.entity(player).insert(Direction::Right);
-    } else if output.desired_translation.x < 0.0 {
-        commands.entity(player).insert(Direction::Left);
-    }
-}
