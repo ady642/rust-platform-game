@@ -67,7 +67,6 @@ fn main() {
             fall,
             apply_movement_animation,
             update_direction,
-            update_sprite_direction // new system added
     )) // new system added
         .run();
 }
@@ -207,18 +206,5 @@ fn update_direction(
         commands.entity(player).insert(Direction::Right);
     } else if output.desired_translation.x < 0.0 {
         commands.entity(player).insert(Direction::Left);
-    }
-}
-
-fn update_sprite_direction(mut query: Query<(&mut TextureAtlasSprite, &Direction)>) {
-    if query.is_empty() {
-        return;
-    }
-
-    let (mut sprite, direction) = query.single_mut();
-
-    match direction {
-        Direction::Right => sprite.flip_x = true,
-        Direction::Left => sprite.flip_x = false,
     }
 }

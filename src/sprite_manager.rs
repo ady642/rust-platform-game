@@ -25,7 +25,7 @@ impl Plugin for SpriteManagerPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Startup,setup)
-            .add_systems(Update,(apply_jump_sprite, apply_idle_sprite));
+            .add_systems(Update,(apply_jump_sprite, apply_idle_sprite, update_sprite_direction));
     }
 }
 
@@ -105,5 +105,18 @@ fn apply_idle_sprite(
     if output.desired_translation.x == 0.0 && output.grounded {
         commands.entity(player).remove::<Animation>();
         sprite.index = SPRITE_IDX_STAND
+    }
+}
+
+fn update_sprite_direction(mut query: Query<(&mut TextureAtlasSprite, &Direction)>) {
+    if query.is_empty() {
+        return;
+    }
+
+    let (mut sprite, direction) = query.single_mut();
+
+    match direction {
+        Direction::Right => sprite.flip_x = true,
+        Direction::Left => sprite.flip_x = false,
     }
 }
