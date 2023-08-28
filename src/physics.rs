@@ -67,6 +67,7 @@ fn jump(
         commands.entity(player).insert(Jump(0.0));
     }
 }
+
 fn rise(
     mut commands: Commands,
     time: Res<Time>,

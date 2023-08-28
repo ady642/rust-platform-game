@@ -52,11 +52,6 @@ fn setup(
             texture_atlas: atlas_handle,
             transform: Transform {
                 translation: Vec3::new(WINDOW_LEFT_X + 100.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
-                scale: Vec3::new( // scale added
-                                  SPRITE_RENDER_WIDTH / SPRITE_TILE_WIDTH,
-                                  SPRITE_RENDER_HEIGHT / SPRITE_TILE_HEIGHT,
-                                  1.0,
-                ),
                 ..Default::default()
             },
             ..Default::default()

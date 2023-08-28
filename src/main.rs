@@ -22,7 +22,8 @@ const COLOR_BACKGROUND: Color = Color::rgb(0.29, 0.31, 0.41);
 
 const FLOOR_THICKNESS: f32 = 10.0;
 
-const COLOR_FLOOR: Color = Color::rgb(0.45, 0.55, 0.66);
+const BG_WIDTH: f32 = 5120.0;
+const BG_HEIGHT: f32 = 432.0;
 
 #[derive(Component)]
 enum Direction {
@@ -36,6 +37,7 @@ struct Jump(f32);
 fn main() {
     App::new()
         .insert_resource(ClearColor(COLOR_BACKGROUND)) // resource added
+        .add_systems(Startup,setup) // new system added
         .add_plugins((DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Bevy Platformer".to_string(),
@@ -51,19 +53,18 @@ fn main() {
             SpriteManagerPlugin,
             PhysicsPlugin
         ))
-        .add_systems(Startup,setup) // new system added
         .run();
 }
 
 fn setup(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut query: Query<&KinematicCharacterControllerOutput>
 ) {
+    let background_image = asset_server.load("textures/bg.png");
+
     commands
         .spawn(SpriteBundle {
-            sprite: Sprite {
-                color: COLOR_FLOOR,
-                ..Default::default()
-            },
             transform: Transform {
                 translation: Vec3::new(0.0, WINDOW_BOTTOM_Y  + (FLOOR_THICKNESS / 2.0), 0.0),
                 scale: Vec3::new(WINDOW_WIDTH, FLOOR_THICKNESS, 1.0),
@@ -74,6 +75,26 @@ fn setup(
         .insert(RigidBody::Fixed)
         .insert(Collider::cuboid(0.5, 0.5));
 
+    commands
+        .spawn(SpriteBundle {
+            texture: background_image,
+            transform: Transform {
+                translation: Vec3::new(
+                    BG_WIDTH / 2.0 + WINDOW_LEFT_X,
+                    WINDOW_BOTTOM_Y + BG_HEIGHT / 2.0,
+                    0.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+
+    if query.is_empty() {
+        return;
+    }
+
+    let player = query.single();
+
+    let camera_position = Vec3::new(player.desired_translation.x, player.desired_translation.y, 1.0);
+
     commands.spawn(Camera2dBundle::default());
 }
-
