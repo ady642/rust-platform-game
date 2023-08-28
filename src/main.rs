@@ -1,6 +1,8 @@
 mod animation;
 mod sprite_manager;
 mod physics;
+mod camera;
+
 mod entities { pub mod objects; }
 
 use entities::objects::ObjectsPlugin;
@@ -11,6 +13,7 @@ use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_rapier2d::prelude::*;
 use crate::sprite_manager::SpriteManagerPlugin;
+use crate::camera::CameraPlugin;
 
 const WINDOW_WIDTH: f32 = 1024.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -51,7 +54,8 @@ fn main() {
             ObjectsPlugin,
             AnimationPlugin,
             SpriteManagerPlugin,
-            PhysicsPlugin
+            PhysicsPlugin,
+            CameraPlugin
         ))
         .run();
 }
@@ -67,7 +71,7 @@ fn setup(
         .spawn(SpriteBundle {
             transform: Transform {
                 translation: Vec3::new(0.0, WINDOW_BOTTOM_Y  + (FLOOR_THICKNESS / 2.0), 0.0),
-                scale: Vec3::new(WINDOW_WIDTH, FLOOR_THICKNESS, 1.0),
+                scale: Vec3::new(BG_WIDTH, FLOOR_THICKNESS, 1.0),
                 ..Default::default()
             },
             ..Default::default()
@@ -87,14 +91,6 @@ fn setup(
             },
             ..Default::default()
         });
-
-    if query.is_empty() {
-        return;
-    }
-
-    let player = query.single();
-
-    let camera_position = Vec3::new(player.desired_translation.x, player.desired_translation.y, 1.0);
 
     commands.spawn(Camera2dBundle::default());
 }
