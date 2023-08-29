@@ -10,8 +10,8 @@ const SPRITESHEET_ROWS: usize = 2;
 const SPRITE_TILE_WIDTH: f32 = 16.0;
 const SPRITE_TILE_HEIGHT: f32 = 32.0;
 
-const SPRITE_RENDER_WIDTH: f32 = 64.0;
-const SPRITE_RENDER_HEIGHT: f32 = 128.0;
+const SPRITE_RENDER_WIDTH: f32 = 32.0;
+const SPRITE_RENDER_HEIGHT: f32 = 64.0;
 
 const SPRITE_OFFSET_X: f32 = 23.0;
 const SPRITE_OFFSET_Y: f32 = 583.0;
@@ -51,6 +51,11 @@ fn setup(
             sprite: TextureAtlasSprite::new(SPRITE_IDX_STAND),
             texture_atlas: atlas_handle,
             transform: Transform {
+                scale: Vec3::new(
+                    SPRITE_RENDER_WIDTH / SPRITE_TILE_WIDTH,
+                    SPRITE_RENDER_HEIGHT / SPRITE_TILE_HEIGHT,
+                    1.0
+                ),
                 translation: Vec3::new(WINDOW_LEFT_X + 100.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
                 ..Default::default()
             },

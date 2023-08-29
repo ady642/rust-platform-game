@@ -63,7 +63,6 @@ fn main() {
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut query: Query<&KinematicCharacterControllerOutput>
 ) {
     let background_image = asset_server.load("textures/bg.png");
 
@@ -83,9 +82,12 @@ fn setup(
         .spawn(SpriteBundle {
             texture: background_image,
             transform: Transform {
+                scale: Vec3::new(
+                    2.0, 2.0, 1.0
+                ),
                 translation: Vec3::new(
-                    BG_WIDTH / 2.0 + WINDOW_LEFT_X,
-                    WINDOW_BOTTOM_Y + BG_HEIGHT / 2.0,
+                    BG_WIDTH + WINDOW_LEFT_X,
+                    WINDOW_BOTTOM_Y + BG_HEIGHT,
                     0.0),
                 ..Default::default()
             },
@@ -94,3 +96,4 @@ fn setup(
 
     commands.spawn(Camera2dBundle::default());
 }
+
