@@ -56,7 +56,7 @@ fn setup(
                     SPRITE_RENDER_HEIGHT / SPRITE_TILE_HEIGHT,
                     1.0
                 ),
-                translation: Vec3::new(WINDOW_LEFT_X + 100.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
+                translation: Vec3::new(WINDOW_LEFT_X + 300.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
                 ..Default::default()
             },
             ..Default::default()

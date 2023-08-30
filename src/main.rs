@@ -51,6 +51,7 @@ fn main() {
             ..Default::default()
         }),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.0),
+            RapierDebugRenderPlugin::default(),
             ObjectsPlugin,
             AnimationPlugin,
             SpriteManagerPlugin,
@@ -65,6 +66,11 @@ fn setup(
     asset_server: Res<AssetServer>,
 ) {
     let background_image = asset_server.load("textures/bg.png");
+
+    let vertices = [
+        Vec2::new(-WINDOW_WIDTH, 0.0),
+        Vec2::new(WINDOW_WIDTH, 0.0),
+    ];
 
     commands
         .spawn(SpriteBundle {

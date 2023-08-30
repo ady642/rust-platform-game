@@ -19,7 +19,7 @@ impl ObjectBundle {
                     ..Default::default()
                 },
                 transform: Transform {
-                    translation: Vec3::new(x, 0.0, 0.0),
+                    translation: Vec3::new(x, 432.0, 0.0),
                     scale,
                     ..Default::default()
                 },
