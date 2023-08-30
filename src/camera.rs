@@ -4,8 +4,7 @@ use bevy_rapier2d::control::KinematicCharacterControllerOutput;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Update, sync_player_camera);
+        app.add_systems(Update, sync_player_camera);
     }
 }
 
@@ -18,5 +17,3 @@ pub fn sync_player_camera(
 
     camera_transform.translation.x += player.effective_translation.x;
 }
-
-

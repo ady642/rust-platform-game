@@ -1,19 +1,21 @@
 mod animation;
-mod sprite_manager;
-mod physics;
 mod camera;
+mod physics;
+mod sprite_manager;
 
-mod entities { pub mod objects; }
+mod entities {
+    pub mod objects;
+}
 
+use animation::AnimationPlugin;
 use entities::objects::ObjectsPlugin;
 use physics::PhysicsPlugin;
-use animation::AnimationPlugin;
 
+use crate::camera::CameraPlugin;
+use crate::sprite_manager::SpriteManagerPlugin;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_rapier2d::prelude::*;
-use crate::sprite_manager::SpriteManagerPlugin;
-use crate::camera::CameraPlugin;
 
 const WINDOW_WIDTH: f32 = 1024.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -40,66 +42,54 @@ struct Jump(f32);
 fn main() {
     App::new()
         .insert_resource(ClearColor(COLOR_BACKGROUND)) // resource added
-        .add_systems(Startup,setup) // new system added
-        .add_plugins((DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Bevy Platformer".to_string(),
-                resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
-                resizable: false,
+        .add_systems(Startup, setup) // new system added
+        .add_plugins((
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Bevy Platformer".to_string(),
+                    resolution: WindowResolution::new(WINDOW_WIDTH, WINDOW_HEIGHT),
+                    resizable: false,
+                    ..Default::default()
+                }),
                 ..Default::default()
             }),
-            ..Default::default()
-        }),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.0),
             RapierDebugRenderPlugin::default(),
             ObjectsPlugin,
             AnimationPlugin,
             SpriteManagerPlugin,
             PhysicsPlugin,
-            CameraPlugin
+            CameraPlugin,
         ))
         .run();
 }
 
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     let background_image = asset_server.load("textures/bg.png");
 
-    let vertices = [
-        Vec2::new(-WINDOW_WIDTH, 0.0),
-        Vec2::new(WINDOW_WIDTH, 0.0),
-    ];
+    let vertices = vec![Vec2::new(-WINDOW_WIDTH, 0.0), Vec2::new(WINDOW_WIDTH, 0.0)];
 
     commands
         .spawn(SpriteBundle {
             transform: Transform {
-                translation: Vec3::new(0.0, WINDOW_BOTTOM_Y  + (FLOOR_THICKNESS / 2.0), 0.0),
+                translation: Vec3::new(0.0, WINDOW_BOTTOM_Y + (FLOOR_THICKNESS / 2.0), 0.0),
                 scale: Vec3::new(BG_WIDTH, FLOOR_THICKNESS, 1.0),
                 ..Default::default()
             },
             ..Default::default()
         })
         .insert(RigidBody::Fixed)
-        .insert(Collider::cuboid(0.5, 0.5));
+        .insert(Collider::polyline(vertices, None));
 
-    commands
-        .spawn(SpriteBundle {
-            texture: background_image,
-            transform: Transform {
-                scale: Vec3::new(
-                    2.0, 2.0, 1.0
-                ),
-                translation: Vec3::new(
-                    BG_WIDTH + WINDOW_LEFT_X,
-                    WINDOW_BOTTOM_Y + BG_HEIGHT,
-                    0.0),
-                ..Default::default()
-            },
+    commands.spawn(SpriteBundle {
+        texture: background_image,
+        transform: Transform {
+            scale: Vec3::new(2.0, 2.0, 1.0),
+            translation: Vec3::new(BG_WIDTH + WINDOW_LEFT_X, WINDOW_BOTTOM_Y + BG_HEIGHT, 0.0),
             ..Default::default()
-        });
+        },
+        ..Default::default()
+    });
 
     commands.spawn(Camera2dBundle::default());
 }
-

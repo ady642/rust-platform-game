@@ -1,10 +1,10 @@
 pub struct PhysicsPlugin;
 
-use std::time::Duration;
 use crate::animation::Animation;
+use crate::{Direction, Jump};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::{ Direction, Jump };
+use std::time::Duration;
 
 const PLAYER_VELOCITY_X: f32 = 400.0;
 const PLAYER_VELOCITY_Y: f32 = 850.0;
@@ -14,15 +14,17 @@ const CYCLE_DELAY: Duration = Duration::from_millis(70);
 
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Update, (
+        app.add_systems(
+            Update,
+            (
                 movement,
                 jump,
                 rise,
                 fall,
                 apply_movement_animation,
-                update_direction
-            ));
+                update_direction,
+            ),
+        );
     }
 }
 

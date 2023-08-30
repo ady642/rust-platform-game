@@ -1,7 +1,7 @@
+use crate::animation::Animation;
+use crate::{Direction, WINDOW_BOTTOM_Y, WINDOW_LEFT_X};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::{WINDOW_BOTTOM_Y, WINDOW_LEFT_X, Direction};
-use crate::animation::Animation;
 
 pub struct SpriteManagerPlugin;
 
@@ -23,18 +23,22 @@ const SPRITE_IDX_JUMP: usize = 6;
 
 impl Plugin for SpriteManagerPlugin {
     fn build(&self, app: &mut App) {
-        app
-            .add_systems(Startup,setup)
-            .add_systems(Update,(apply_jump_sprite, apply_idle_sprite, update_sprite_direction));
+        app.add_systems(Startup, setup).add_systems(
+            Update,
+            (
+                apply_jump_sprite,
+                apply_idle_sprite,
+                update_sprite_direction,
+            ),
+        );
     }
 }
 
 fn setup(
     mut commands: Commands,
     mut atlases: ResMut<Assets<TextureAtlas>>,
-    server: Res<AssetServer>
+    server: Res<AssetServer>,
 ) {
-
     let image_handle: Handle<Image> = server.load("spritesheets/spritesheet_Mario.png");
     let texture_atlas = TextureAtlas::from_grid(
         image_handle,
@@ -54,7 +58,7 @@ fn setup(
                 scale: Vec3::new(
                     SPRITE_RENDER_WIDTH / SPRITE_TILE_WIDTH,
                     SPRITE_RENDER_HEIGHT / SPRITE_TILE_HEIGHT,
-                    1.0
+                    1.0,
                 ),
                 translation: Vec3::new(WINDOW_LEFT_X + 300.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
                 ..Default::default()
@@ -64,8 +68,8 @@ fn setup(
         .insert(RigidBody::KinematicPositionBased)
         .insert(Collider::cuboid(
             SPRITE_TILE_WIDTH / 2.0,
-            SPRITE_TILE_HEIGHT / 2.0)
-        )
+            SPRITE_TILE_HEIGHT / 2.0,
+        ))
         .insert(KinematicCharacterController::default())
         .insert(Direction::Right); // default direction
 }
