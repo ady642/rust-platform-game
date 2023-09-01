@@ -110,21 +110,13 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 
-fn display_contact_info(rapier_context: Res<RapierContext>,
-    query: Query<(Entity), With<KinematicCharacterController>>
-) {
-
-    let (entity, collider) = query; // An entity with a collider attached.
-
-    for contact_pair in rapier_context.contacts {
-        let other_collider = if contact_pair.collider1() == entity {
-            contact_pair.collider2()
-        } else {
-            contact_pair.collider1()
-        };
-
-        // Process the contact pair in a way similar to what we did in
-        // the previous example.
+/* Read the character controller collisions stored in the character controller’s output. */
+fn display_contact_info(mut character_controller_outputs: Query<&mut KinematicCharacterControllerOutput>) {
+    for mut output in character_controller_outputs.iter_mut() {
+        for collision in &output.collisions {
+            // Do something with that collision information.
+            println!("Collision with {:?}", collision);
+        }
     }
 }
 

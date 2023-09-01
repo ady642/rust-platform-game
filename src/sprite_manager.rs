@@ -90,7 +90,7 @@ fn apply_jump_sprite(
         return;
     }
 
-    let (player, output, mut sprite, CollisionEvent) = query.single_mut();
+    let (player, output, mut sprite) = query.single_mut();
     if !output.grounded {
         commands.entity(player).remove::<Animation>();
         sprite.index = SPRITE_IDX_JUMP
