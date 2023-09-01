@@ -67,11 +67,15 @@ fn setup(
         })
         .insert(RigidBody::KinematicPositionBased)
         .insert(Collider::cuboid(
-            SPRITE_TILE_WIDTH / 2.0,
-            SPRITE_TILE_HEIGHT / 2.0,
+            SPRITE_TILE_WIDTH,
+            SPRITE_TILE_HEIGHT,
         ))
         .insert(KinematicCharacterController::default())
-        .insert(Direction::Right); // default direction
+        .insert(Direction::Right)
+        .insert(ActiveEvents::COLLISION_EVENTS);
+
+
+    ; // default direction
 }
 
 fn apply_jump_sprite(
@@ -86,7 +90,7 @@ fn apply_jump_sprite(
         return;
     }
 
-    let (player, output, mut sprite) = query.single_mut();
+    let (player, output, mut sprite, CollisionEvent) = query.single_mut();
     if !output.grounded {
         commands.entity(player).remove::<Animation>();
         sprite.index = SPRITE_IDX_JUMP

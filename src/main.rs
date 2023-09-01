@@ -16,6 +16,7 @@ use crate::sprite_manager::SpriteManagerPlugin;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::rapier::prelude::CollisionEventFlags;
 
 const WINDOW_WIDTH: f32 = 1024.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -25,7 +26,7 @@ const WINDOW_LEFT_X: f32 = -WINDOW_WIDTH / 2.0;
 
 const COLOR_BACKGROUND: Color = Color::rgb(0.29, 0.31, 0.41);
 
-const FLOOR_THICKNESS: f32 = 10.0;
+const FLOOR_THICKNESS: f32 = 100.0;
 
 const BG_WIDTH: f32 = 5120.0;
 const BG_HEIGHT: f32 = 432.0;
@@ -42,7 +43,8 @@ struct Jump(f32);
 fn main() {
     App::new()
         .insert_resource(ClearColor(COLOR_BACKGROUND)) // resource added
-        .add_systems(Startup, setup) // new system added
+        .add_startup_systems(setup) //
+        .add_systems(Update, display_contact_info)
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -65,24 +67,37 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let background_image = asset_server.load("textures/bg.png");
+    let world_image = asset_server.load("textures/world.png");
 
-    let vertices = vec![Vec2::new(-WINDOW_WIDTH, 0.0), Vec2::new(WINDOW_WIDTH, 0.0)];
+    let vertices = vec![
+        Vec2::new(WINDOW_LEFT_X, WINDOW_BOTTOM_Y + 94.0),
+        Vec2::new(WINDOW_LEFT_X + 3744.0, WINDOW_BOTTOM_Y + 94.0),
+        Vec2::new(WINDOW_LEFT_X + 608.0, WINDOW_BOTTOM_Y + 190.0),
+        Vec2::new(WINDOW_LEFT_X + 1116.0, WINDOW_BOTTOM_Y + 190.0),
+    ];
+
+    let indices = vec![
+        [0u32, 1u32],
+        [2u32, 3u32],
+    ];
 
     commands
         .spawn(SpriteBundle {
             transform: Transform {
-                translation: Vec3::new(0.0, WINDOW_BOTTOM_Y + (FLOOR_THICKNESS / 2.0), 0.0),
-                scale: Vec3::new(BG_WIDTH, FLOOR_THICKNESS, 1.0),
                 ..Default::default()
             },
             ..Default::default()
         })
         .insert(RigidBody::Fixed)
-        .insert(Collider::polyline(vertices, None));
+        .insert(Collider::polyline(vertices, Option::from(indices)))
+        .insert(Friction {
+            coefficient: 0.1,
+            combine_rule: CoefficientCombineRule::Min,
+        })
+    ;
 
     commands.spawn(SpriteBundle {
-        texture: background_image,
+        texture: world_image,
         transform: Transform {
             scale: Vec3::new(2.0, 2.0, 1.0),
             translation: Vec3::new(BG_WIDTH + WINDOW_LEFT_X, WINDOW_BOTTOM_Y + BG_HEIGHT, 0.0),
@@ -93,3 +108,23 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn(Camera2dBundle::default());
 }
+
+
+fn display_contact_info(rapier_context: Res<RapierContext>,
+    query: Query<(Entity), With<KinematicCharacterController>>
+) {
+
+    let (entity, collider) = query; // An entity with a collider attached.
+
+    for contact_pair in rapier_context.contacts {
+        let other_collider = if contact_pair.collider1() == entity {
+            contact_pair.collider2()
+        } else {
+            contact_pair.collider1()
+        };
+
+        // Process the contact pair in a way similar to what we did in
+        // the previous example.
+    }
+}
+

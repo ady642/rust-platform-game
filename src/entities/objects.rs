@@ -27,6 +27,7 @@ impl ObjectBundle {
             },
             body: RigidBody::Dynamic,
             collider: Collider::cuboid(0.5, 0.5),
+
         }
     }
 }
