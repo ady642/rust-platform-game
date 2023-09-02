@@ -70,7 +70,7 @@ fn jump(
 
     if input.pressed(KeyCode::Up) && output.grounded {
         commands.entity(player).insert(Jump(0.0));
-        character_controller.filter_flags = QueryFilterFlags::EXCLUDE_FIXED;
+        character_controller.filter_flags = QueryFilterFlags::all();
     }
 }
 
