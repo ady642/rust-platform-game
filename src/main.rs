@@ -1,3 +1,5 @@
+#![feature(exact_size_is_empty)]
+
 mod animation;
 mod camera;
 mod physics;
@@ -108,19 +110,16 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn display_contact_info(
-    mut character_controller: Query<&mut KinematicCharacterController>,
-    mut character_controller_output: Query<&mut KinematicCharacterControllerOutput>,
+    mut query_character_controller: Query<&mut KinematicCharacterController>,
+    query_jumping_character_controller_output: Query<&mut KinematicCharacterControllerOutput, With<Jump>>,
 ) {
-    let mut cc = character_controller.single_mut();
-    for mut cco in character_controller_output.iter_mut() {
-        for collision in cco.collisions.iter_mut() {
-            println!("{:?}", collision.toi.status);
-            if collision.toi.normal2.y == 1.0 {
-                cc.filter_flags = QueryFilterFlags::EXCLUDE_FIXED;
-            } else if collision.toi.status == TOIStatus::Converged {
-                cc.filter_flags = QueryFilterFlags::default();
-            }
-        }
+    let mut character_controller = query_character_controller.single_mut();
+
+    for _ in query_jumping_character_controller_output.iter() { // if no character we dont enter in the loop
+        character_controller.filter_flags = QueryFilterFlags::EXCLUDE_FIXED;
+        return;
     }
+
+    character_controller.filter_flags = QueryFilterFlags::default();
 }
 
