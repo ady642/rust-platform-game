@@ -47,7 +47,6 @@ fn main() {
     App::new()
         .insert_resource(ClearColor(COLOR_BACKGROUND)) // resource added
         .add_startup_systems(setup) //
-        .add_systems(Update, display_contact_info)
         .add_plugins((
             DefaultPlugins.set(WindowPlugin {
                 primary_window: Some(Window {
@@ -108,18 +107,3 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.spawn(Camera2dBundle::default());
 }
-
-fn display_contact_info(
-    mut query_character_controller: Query<&mut KinematicCharacterController>,
-    query_jumping_character_controller_output: Query<&mut KinematicCharacterControllerOutput, With<Jump>>,
-) {
-    let mut character_controller = query_character_controller.single_mut();
-
-    for _ in query_jumping_character_controller_output.iter() { // if no character we dont enter in the loop
-        character_controller.filter_flags = QueryFilterFlags::EXCLUDE_FIXED;
-        return;
-    }
-
-    character_controller.filter_flags = QueryFilterFlags::default();
-}
-

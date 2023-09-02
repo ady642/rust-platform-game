@@ -54,19 +54,23 @@ fn movement(
 fn jump(
     input: Res<Input<KeyCode>>,
     mut commands: Commands,
+    mut query_character_controller: Query<&mut KinematicCharacterController>,
     query: Query<
         (Entity, &KinematicCharacterControllerOutput),
         (With<KinematicCharacterController>, Without<Jump>),
-    >,
+    >
 ) {
     if query.is_empty() {
         return;
     }
+    let mut character_controller = query_character_controller.single_mut();
+
 
     let (player, output) = query.single();
 
     if input.pressed(KeyCode::Up) && output.grounded {
         commands.entity(player).insert(Jump(0.0));
+        character_controller.filter_flags = QueryFilterFlags::EXCLUDE_FIXED;
     }
 }
 
@@ -86,6 +90,7 @@ fn rise(
     if movement + jump.0 >= MAX_JUMP_HEIGHT {
         movement = MAX_JUMP_HEIGHT - jump.0;
         commands.entity(entity).remove::<Jump>();
+        player.filter_flags = QueryFilterFlags::default();
     }
 
     jump.0 += movement;
