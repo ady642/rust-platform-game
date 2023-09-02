@@ -7,6 +7,7 @@ mod entities {
     pub mod objects;
 }
 
+use std::ops::Deref;
 use animation::AnimationPlugin;
 use entities::objects::ObjectsPlugin;
 use physics::PhysicsPlugin;
@@ -15,8 +16,10 @@ use crate::camera::CameraPlugin;
 use crate::sprite_manager::SpriteManagerPlugin;
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
+use bevy_rapier2d::parry::partitioning::IndexedData;
 use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::prelude::CollisionEventFlags;
+use bevy_rapier2d::rapier::pipeline::PhysicsHooks;
+use bevy_rapier2d::rapier::prelude::ContactModificationContext;
 
 const WINDOW_WIDTH: f32 = 1024.0;
 const WINDOW_HEIGHT: f32 = 720.0;
@@ -25,8 +28,6 @@ const WINDOW_BOTTOM_Y: f32 = -WINDOW_HEIGHT / 2.0;
 const WINDOW_LEFT_X: f32 = -WINDOW_WIDTH / 2.0;
 
 const COLOR_BACKGROUND: Color = Color::rgb(0.29, 0.31, 0.41);
-
-const FLOOR_THICKNESS: f32 = 100.0;
 
 const BG_WIDTH: f32 = 5120.0;
 const BG_HEIGHT: f32 = 432.0;
@@ -57,7 +58,6 @@ fn main() {
             }),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.0),
             RapierDebugRenderPlugin::default(),
-            ObjectsPlugin,
             AnimationPlugin,
             SpriteManagerPlugin,
             PhysicsPlugin,
@@ -90,10 +90,8 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         })
         .insert(RigidBody::Fixed)
         .insert(Collider::polyline(vertices, Option::from(indices)))
-        .insert(Friction {
-            coefficient: 0.1,
-            combine_rule: CoefficientCombineRule::Min,
-        })
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1))
     ;
 
     commands.spawn(SpriteBundle {
@@ -109,13 +107,19 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
 }
 
-
-/* Read the character controller collisions stored in the character controller’s output. */
-fn display_contact_info(mut character_controller_outputs: Query<&mut KinematicCharacterControllerOutput>) {
-    for mut output in character_controller_outputs.iter_mut() {
-        for collision in &output.collisions {
-            // Do something with that collision information.
-            println!("Collision with {:?}", collision);
+fn display_contact_info(
+    mut character_controller: Query<&mut KinematicCharacterController>,
+    mut character_controller_output: Query<&mut KinematicCharacterControllerOutput>,
+) {
+    let mut cc = character_controller.single_mut();
+    for mut cco in character_controller_output.iter_mut() {
+        for collision in cco.collisions.iter_mut() {
+            println!("{:?}", collision.toi.status);
+            if collision.toi.normal2.y == 1.0 {
+                cc.filter_flags = QueryFilterFlags::EXCLUDE_FIXED;
+            } else if collision.toi.status == TOIStatus::Converged {
+                cc.filter_flags = QueryFilterFlags::default();
+            }
         }
     }
 }

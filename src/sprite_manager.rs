@@ -67,15 +67,15 @@ fn setup(
         })
         .insert(RigidBody::KinematicPositionBased)
         .insert(Collider::cuboid(
-            SPRITE_TILE_WIDTH,
-            SPRITE_TILE_HEIGHT,
+            SPRITE_TILE_WIDTH / 2.0,
+            SPRITE_TILE_HEIGHT / 2.0,
         ))
-        .insert(KinematicCharacterController::default())
+        .insert(KinematicCharacterController{
+            ..Default::default()
+        })
         .insert(Direction::Right)
-        .insert(ActiveEvents::COLLISION_EVENTS);
-
-
-    ; // default direction
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(ActiveHooks::MODIFY_SOLVER_CONTACTS);
 }
 
 fn apply_jump_sprite(
