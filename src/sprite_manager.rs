@@ -1,15 +1,16 @@
+use std::time::Duration;
 use crate::animation::Animation;
 use crate::{Direction, WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::physics::Player;
+use crate::utils::build_point;
 
 pub struct SpriteManagerPlugin;
 
 const SPRITESHEET_COLS: usize = 5;
 const SPRITESHEET_ROWS: usize = 2;
-const SPRITE_TILE_WIDTH: f32 = 16.0;
-const SPRITE_TILE_HEIGHT: f32 = 32.0;
+const SPRITE_MARIO_WIDTH: f32 = 16.0;
+const SPRITE_MARIO_HEIGHT: f32 = 32.0;
 
 const SPRITE_RENDER_WIDTH: f32 = 32.0;
 const SPRITE_RENDER_HEIGHT: f32 = 64.0;
@@ -22,12 +23,17 @@ const SPRITE_PADDING_Y: f32 = 36.0;
 const SPRITE_IDX_STAND: usize = 0;
 const SPRITE_IDX_JUMP: usize = 6;
 
+const SPRITE_TILE_WIDTH: f32 = 15.0;
+const SPRITE_TILE_HEIGHT: f32 = 15.0;
+const SPRITE_TILE_PADDING: f32 = 9.0;
+
 impl Plugin for SpriteManagerPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Startup, (
                 setup,
-                add_world_image
+                add_world_image,
+                add_block_to_world
             ))
             .add_systems(
             Update,
@@ -48,7 +54,7 @@ fn setup(
     let image_handle: Handle<Image> = server.load("spritesheets/spritesheet_Mario.png");
     let texture_atlas = TextureAtlas::from_grid(
         image_handle,
-        Vec2::new(SPRITE_TILE_WIDTH, SPRITE_TILE_HEIGHT),
+        Vec2::new(SPRITE_MARIO_WIDTH, SPRITE_MARIO_HEIGHT),
         SPRITESHEET_COLS,
         SPRITESHEET_ROWS,
         Option::from(Vec2::new(SPRITE_PADDING_X, SPRITE_PADDING_Y)),
@@ -62,8 +68,8 @@ fn setup(
             texture_atlas: atlas_handle,
             transform: Transform {
                 scale: Vec3::new(
-                    SPRITE_RENDER_WIDTH / SPRITE_TILE_WIDTH,
-                    SPRITE_RENDER_HEIGHT / SPRITE_TILE_HEIGHT,
+                    SPRITE_RENDER_WIDTH / SPRITE_MARIO_WIDTH,
+                    SPRITE_RENDER_HEIGHT / SPRITE_MARIO_HEIGHT,
                     1.0,
                 ),
                 translation: Vec3::new(WINDOW_LEFT_X + 300.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
@@ -73,8 +79,8 @@ fn setup(
         })
         .insert(RigidBody::KinematicPositionBased)
         .insert(Collider::cuboid(
-            SPRITE_TILE_WIDTH / 2.0,
-            SPRITE_TILE_HEIGHT / 2.0,
+            SPRITE_MARIO_WIDTH / 2.0,
+            SPRITE_MARIO_HEIGHT / 2.0,
         ))
         .insert(KinematicCharacterController{
             ..Default::default()
@@ -147,4 +153,49 @@ fn add_world_image(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
         ..Default::default()
     });
+}
+
+fn add_block_to_world(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    let image_handle: Handle<Image> = asset_server.load("spritesheets/tiles.png");
+    let texture_atlas = TextureAtlas::from_grid(
+        image_handle,
+        Vec2::new(SPRITE_TILE_WIDTH, SPRITE_TILE_HEIGHT),
+        4,
+        1,
+        Option::from(Vec2::new(SPRITE_TILE_PADDING, 0.0)),
+        Option::from(Vec2::new(8.0, 248.0)),
+    );
+    let atlas_handle = atlases.add(texture_atlas);
+
+    const CYCLE_DELAY: Duration = Duration::from_millis(500);
+
+    const SPRITE_IDX_WALKING: &[usize] = &[0, 1, 2, 3];
+
+    commands
+        .spawn(SpriteSheetBundle {
+            sprite: TextureAtlasSprite::new(SPRITE_IDX_STAND),
+            texture_atlas: atlas_handle,
+            transform: Transform {
+                scale: Vec3::new(
+                    SPRITE_RENDER_WIDTH / SPRITE_MARIO_WIDTH,
+                    SPRITE_RENDER_HEIGHT / SPRITE_MARIO_HEIGHT,
+                    1.0,
+                ),
+                translation: Vec3::new(WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 224.0, 0.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(RigidBody::Fixed)
+        .insert(Collider::cuboid(
+            SPRITE_TILE_WIDTH / 2.0,
+            SPRITE_TILE_HEIGHT / 2.0,
+        ))
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(Animation::new(SPRITE_IDX_WALKING, CYCLE_DELAY));
+
 }

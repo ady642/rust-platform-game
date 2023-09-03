@@ -5,6 +5,7 @@ mod camera;
 mod physics;
 mod sprite_manager;
 mod game;
+mod utils;
 
 mod entities {
     pub mod objects;

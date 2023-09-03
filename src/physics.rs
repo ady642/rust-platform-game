@@ -5,7 +5,7 @@ use crate::{BG_WIDTH, Direction, Jump, SCALE, WINDOW_BOTTOM_Y, WINDOW_LEFT_X};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::Duration;
-use bevy::ecs::system::lifetimeless::SCommands;
+use crate::utils::build_point;
 
 const PLAYER_VELOCITY_X: f32 = 400.0;
 const PLAYER_VELOCITY_Y: f32 = 850.0;
@@ -161,10 +161,6 @@ fn update_direction(
 }
 
 pub fn world_to_vec() -> (Vec<Vec2>, Vec<[u32; 2]>) {
-    fn build_point(x: f32, y: f32) -> Vec2 {
-        Vec2::new(WINDOW_LEFT_X + x * SCALE , WINDOW_BOTTOM_Y + y * SCALE) // to put the origin in the bottom left corner
-    }
-
     let platform_3 = vec![ // Create factories to create each element (pipe, platform, etc)
                            build_point(2992.0, 96.0),
                            build_point(3071.0, 96.0),
