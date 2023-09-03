@@ -1,10 +1,11 @@
 pub struct PhysicsPlugin;
 
 use crate::animation::Animation;
-use crate::{Direction, Jump};
+use crate::{BG_WIDTH, Direction, Jump, SCALE, WINDOW_BOTTOM_Y, WINDOW_LEFT_X};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::Duration;
+use bevy::ecs::system::lifetimeless::SCommands;
 
 const PLAYER_VELOCITY_X: f32 = 400.0;
 const PLAYER_VELOCITY_Y: f32 = 850.0;
@@ -12,9 +13,18 @@ const MAX_JUMP_HEIGHT: f32 = 230.0;
 const SPRITE_IDX_WALKING: &[usize] = &[0, 4, 3];
 const CYCLE_DELAY: Duration = Duration::from_millis(70);
 
+const SPRITE_TILE_WIDTH: f32 = 16.0;
+const SPRITE_TILE_HEIGHT: f32 = 32.0;
+
+#[derive(Component)]
+pub struct Player {
+    pub entity: Entity,
+}
+
 impl Plugin for PhysicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
+        app
+            .add_systems(
             Update,
             (
                 movement,
@@ -148,4 +158,78 @@ fn update_direction(
     } else if output.desired_translation.x < 0.0 {
         commands.entity(player).insert(Direction::Left);
     }
+}
+
+pub fn world_to_vec() -> (Vec<Vec2>, Vec<[u32; 2]>) {
+    fn build_point(x: f32, y: f32) -> Vec2 {
+        Vec2::new(WINDOW_LEFT_X + x * SCALE , WINDOW_BOTTOM_Y + y * SCALE) // to put the origin in the bottom left corner
+    }
+
+    let platform_3 = vec![ // Create factories to create each element (pipe, platform, etc)
+                           build_point(2992.0, 96.0),
+                           build_point(3071.0, 96.0),
+    ];
+
+    let platform_4 = [
+        build_point(3024.0, 144.0),
+        build_point(3150.0, 144.0),
+    ];
+
+    let platform_5 = [
+        build_point(3120.0, 96.0),
+        build_point(3215.0, 96.0),
+    ];
+
+    let platform_6 = [
+        build_point(3392.0, 128.0),
+        build_point(3551.0, 128.0),
+    ];
+
+    let mut vertices = vec![
+        build_point(0.0, 47.0),
+        build_point(1872.0, 47.0),
+        build_point(304.0, 95.0),
+        build_point(558.0, 95.0),
+        build_point(704.0, 112.0),
+        build_point(815.0, 112.0),
+        build_point(1872.0, 64.0),
+        build_point(1952.0, 64.0),
+        build_point(1952.0, 80.0),
+        build_point(2015.0, 80.0),
+        build_point(2015.0, 96.0),
+        build_point(2064.0, 96.0),
+        build_point(2064.0, 113.0),
+        build_point(2287.0, 113.0),
+        build_point(2287.0, 47.0),
+        build_point(3488.0, 47.0),
+        build_point(3488.0, 79.0),
+        build_point(3647.0, 79.0),
+        build_point(3647.0, 47.0),
+        build_point(BG_WIDTH, 47.0),
+    ];
+
+    vertices.extend(platform_3);
+    vertices.extend(platform_4);
+    vertices.extend(platform_5);
+    vertices.extend(platform_6);
+
+    let indices = vec![
+        [0u32, 1u32],
+        [2u32, 3u32],
+        [4u32, 5u32],
+        [6u32, 7u32],
+        [8u32, 9u32],
+        [10u32, 11u32],
+        [12u32, 13u32],
+        [13u32, 14u32],
+        [14u32, 15u32],
+        [16u32, 17u32],
+        [18u32, 19u32],
+        [20u32, 21u32],
+        [22u32, 23u32],
+        [24u32, 25u32],
+        [26u32, 27u32]
+    ];
+
+    return (vertices, indices);
 }

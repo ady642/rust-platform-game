@@ -1,7 +1,8 @@
 use crate::animation::Animation;
-use crate::{Direction, WINDOW_BOTTOM_Y, WINDOW_LEFT_X};
+use crate::{Direction, WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use crate::physics::Player;
 
 pub struct SpriteManagerPlugin;
 
@@ -23,12 +24,17 @@ const SPRITE_IDX_JUMP: usize = 6;
 
 impl Plugin for SpriteManagerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, setup).add_systems(
+        app
+            .add_systems(Startup, (
+                setup,
+                add_world_image
+            ))
+            .add_systems(
             Update,
             (
                 apply_jump_sprite,
                 apply_idle_sprite,
-                update_sprite_direction,
+                update_sprite_direction
             ),
         );
     }
@@ -127,4 +133,18 @@ fn update_sprite_direction(mut query: Query<(&mut TextureAtlasSprite, &Direction
         Direction::Right => sprite.flip_x = true,
         Direction::Left => sprite.flip_x = false,
     }
+}
+
+fn add_world_image(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let world_image = asset_server.load("textures/world.png");
+
+    commands.spawn(SpriteBundle {
+        texture: world_image,
+        transform: Transform {
+            scale: Vec3::new(SCALE, SCALE, 1.0),
+            translation: Vec3::new(BG_WIDTH + WINDOW_LEFT_X, WINDOW_BOTTOM_Y + BG_HEIGHT, 0.0),
+            ..Default::default()
+        },
+        ..Default::default()
+    });
 }
