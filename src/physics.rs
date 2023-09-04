@@ -1,10 +1,11 @@
 pub struct PhysicsPlugin;
 
 use crate::animation::Animation;
-use crate::{BG_WIDTH, Direction, Jump, SCALE, WINDOW_BOTTOM_Y, WINDOW_LEFT_X};
+use crate::{BG_WIDTH, Direction, Jump};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::Duration;
+use crate::sprite_manager::Block;
 use crate::utils::build_point;
 
 const PLAYER_VELOCITY_X: f32 = 400.0;
@@ -33,6 +34,7 @@ impl Plugin for PhysicsPlugin {
                 fall,
                 apply_movement_animation,
                 update_direction,
+                detect_collision_from_below_on_block
             ),
         );
     }
@@ -80,7 +82,10 @@ fn jump(
 
     if input.pressed(KeyCode::Up) && output.grounded {
         commands.entity(player).insert(Jump(0.0));
-        character_controller.filter_flags = QueryFilterFlags::all();
+        character_controller.filter_groups = Option::from(CollisionGroups::new(
+            Group::GROUP_2,
+            Group::ALL - Group::GROUP_1,
+        ));
     }
 }
 
@@ -100,7 +105,10 @@ fn rise(
     if movement + jump.0 >= MAX_JUMP_HEIGHT {
         movement = MAX_JUMP_HEIGHT - jump.0;
         commands.entity(entity).remove::<Jump>();
-        player.filter_flags = QueryFilterFlags::default();
+        player.filter_groups = Option::from(CollisionGroups::new(
+            Group::default(),
+            Group::default(),
+        ));
     }
 
     jump.0 += movement;
@@ -228,4 +236,19 @@ pub fn world_to_vec() -> (Vec<Vec2>, Vec<[u32; 2]>) {
     ];
 
     return (vertices, indices);
+}
+
+fn detect_collision_from_below_on_block(
+    mut query: Query<(Entity, &mut Block)>,
+    mut character_controller_outputs: Query<&mut KinematicCharacterControllerOutput>
+) {
+    for (entity, mut block) in query.iter_mut() {
+        for mut output in character_controller_outputs.iter_mut() {
+            for collision in &output.collisions {
+                if collision.entity == entity && collision.toi.normal1.y == -1.0 {
+                        block.opened = true;
+                }
+            }
+        }
+    }
 }

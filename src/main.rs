@@ -23,6 +23,7 @@ use bevy::window::WindowResolution;
 use bevy_rapier2d::parry::partitioning::IndexedData;
 use bevy_rapier2d::prelude::*;
 use bevy_rapier2d::rapier::pipeline::PhysicsHooks;
+use crate::entities::objects::ObjectsPlugin;
 use crate::physics::world_to_vec;
 
 const WINDOW_WIDTH: f32 = 1024.0;
@@ -84,7 +85,10 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(RigidBody::Fixed)
         .insert(Collider::polyline(vertices, Option::from(indices)))
         .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(CollisionGroups::new(Group::GROUP_2, Group::GROUP_1))
+        .insert(CollisionGroups::new(
+            Group::GROUP_1,
+            Group::ALL
+        ))
     ;
 
     commands.spawn(Camera2dBundle::default());

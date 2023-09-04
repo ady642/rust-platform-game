@@ -22,10 +22,12 @@ const SPRITE_PADDING_Y: f32 = 36.0;
 
 const SPRITE_IDX_STAND: usize = 0;
 const SPRITE_IDX_JUMP: usize = 6;
+const SPRITE_IDX_BLOCK_OPENED: usize = 4;
 
 const SPRITE_TILE_WIDTH: f32 = 15.0;
 const SPRITE_TILE_HEIGHT: f32 = 15.0;
 const SPRITE_TILE_PADDING: f32 = 9.0;
+const SPRITE_TILE_PADDING_Y: f32 = 6.0;
 
 impl Plugin for SpriteManagerPlugin {
     fn build(&self, app: &mut App) {
@@ -40,7 +42,8 @@ impl Plugin for SpriteManagerPlugin {
             (
                 apply_jump_sprite,
                 apply_idle_sprite,
-                update_sprite_direction
+                update_sprite_direction,
+                apply_opened_block_sprite
             ),
         );
     }
@@ -83,6 +86,7 @@ fn setup(
             SPRITE_MARIO_HEIGHT / 2.0,
         ))
         .insert(KinematicCharacterController{
+            apply_impulse_to_dynamic_bodies: true,
             ..Default::default()
         })
         .insert(Direction::Right)
@@ -155,6 +159,11 @@ fn add_world_image(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
+#[derive(Component)] // TODO: Reflect
+pub struct Block {
+    pub opened: bool,
+}
+
 fn add_block_to_world(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -165,15 +174,15 @@ fn add_block_to_world(
         image_handle,
         Vec2::new(SPRITE_TILE_WIDTH, SPRITE_TILE_HEIGHT),
         4,
-        1,
-        Option::from(Vec2::new(SPRITE_TILE_PADDING, 0.0)),
+        2,
+        Option::from(Vec2::new(SPRITE_TILE_PADDING, SPRITE_TILE_PADDING_Y)),
         Option::from(Vec2::new(8.0, 248.0)),
     );
     let atlas_handle = atlases.add(texture_atlas);
 
     const CYCLE_DELAY: Duration = Duration::from_millis(500);
 
-    const SPRITE_IDX_WALKING: &[usize] = &[0, 1, 2, 3];
+    const SPRITE_IDX_ANIM: &[usize] = &[0, 1, 2, 3];
 
     commands
         .spawn(SpriteSheetBundle {
@@ -195,7 +204,28 @@ fn add_block_to_world(
             SPRITE_TILE_WIDTH / 2.0,
             SPRITE_TILE_HEIGHT / 2.0,
         ))
+        .insert(Block{
+            opened: false
+        })
         .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Animation::new(SPRITE_IDX_WALKING, CYCLE_DELAY));
+        .insert(Animation::new(SPRITE_IDX_ANIM, CYCLE_DELAY));
+}
 
+fn apply_opened_block_sprite(
+    mut commands: Commands,
+    mut query: Query<(
+        Entity,
+        &Block,
+        &mut TextureAtlasSprite,
+    )>,
+) {
+    if query.is_empty() {
+        return;
+    }
+
+    let (block_entity, block, mut sprite) = query.single_mut();
+    if block.opened {
+        commands.entity(block_entity).remove::<Animation>();
+        sprite.index = SPRITE_IDX_BLOCK_OPENED;
+    }
 }
