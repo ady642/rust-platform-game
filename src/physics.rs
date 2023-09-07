@@ -5,6 +5,7 @@ use crate::{BG_WIDTH, Direction, Jump};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::Duration;
+use crate::entities::champi::Champi;
 use crate::sprite_manager::Block;
 use crate::utils::build_point;
 
@@ -34,7 +35,8 @@ impl Plugin for PhysicsPlugin {
                 fall,
                 apply_movement_animation,
                 update_direction,
-                detect_collision_from_below_on_block
+                detect_collision_from_below_on_block,
+                apply_translation_to_champi
             ),
         );
     }
@@ -239,16 +241,27 @@ pub fn world_to_vec() -> (Vec<Vec2>, Vec<[u32; 2]>) {
 }
 
 fn detect_collision_from_below_on_block(
-    mut query: Query<(Entity, &mut Block)>,
+    mut query: Query<(Entity, &mut Block, &mut Champi)>,
     mut character_controller_outputs: Query<&mut KinematicCharacterControllerOutput>
 ) {
-    for (entity, mut block) in query.iter_mut() {
+    for (entity, mut block, mut champi) in query.iter_mut() {
         for mut output in character_controller_outputs.iter_mut() {
             for collision in &output.collisions {
                 if collision.entity == entity && collision.toi.normal1.y == -1.0 {
                         block.opened = true;
+                        //champi.visible = true;
                 }
             }
+        }
+    }
+}
+
+fn apply_translation_to_champi(
+    mut query: Query<(&mut Transform, &Champi)>,
+) {
+    for mut transform in query.iter_mut() {
+        if transform.1.visible {
+            transform.0.translation.x += 1.0;
         }
     }
 }

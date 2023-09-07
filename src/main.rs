@@ -4,11 +4,11 @@ mod animation;
 mod camera;
 mod physics;
 mod sprite_manager;
-mod game;
 mod utils;
 
 mod entities {
     pub mod objects;
+    pub mod champi;
 }
 
 use std::ops::Deref;
@@ -40,7 +40,7 @@ const BG_HEIGHT: f32 = 432.0;
 const SCALE: f32 = 2.0;
 
 #[derive(Component)]
-enum Direction {
+pub enum Direction {
     Right,
     Left,
 }

@@ -3,6 +3,7 @@ use crate::animation::Animation;
 use crate::{Direction, WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use crate::entities::champi::Champi;
 use crate::utils::build_point;
 
 pub struct SpriteManagerPlugin;
@@ -35,7 +36,8 @@ impl Plugin for SpriteManagerPlugin {
             .add_systems(Startup, (
                 setup,
                 add_world_image,
-                add_block_to_world
+                add_block_to_world,
+                add_champi
             ))
             .add_systems(
             Update,
@@ -47,6 +49,11 @@ impl Plugin for SpriteManagerPlugin {
             ),
         );
     }
+}
+
+#[derive(Component)] // TODO: Reflect
+pub struct Block {
+    pub opened: bool,
 }
 
 fn setup(
@@ -159,10 +166,7 @@ fn add_world_image(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-#[derive(Component)] // TODO: Reflect
-pub struct Block {
-    pub opened: bool,
-}
+
 
 fn add_block_to_world(
     mut commands: Commands,
@@ -224,8 +228,41 @@ fn apply_opened_block_sprite(
     }
 
     let (block_entity, block, mut sprite) = query.single_mut();
+    println!("block opened: {}", block.opened);
     if block.opened {
         commands.entity(block_entity).remove::<Animation>();
         sprite.index = SPRITE_IDX_BLOCK_OPENED;
     }
+}
+
+fn add_champi(
+    mut commands: Commands,
+    mut atlases: ResMut<Assets<TextureAtlas>>,
+) {
+
+    commands
+        .spawn(SpriteSheetBundle {
+            sprite: TextureAtlasSprite::new(5),
+            texture_atlas: atlases.get_handle("spritesheets/tiles.png"),
+            transform: Transform {
+                scale: Vec3::new(
+                    SPRITE_RENDER_WIDTH / SPRITE_MARIO_WIDTH,
+                    SPRITE_RENDER_HEIGHT / SPRITE_MARIO_HEIGHT,
+                    1.0,
+                ),
+                translation: Vec3::new(WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 230.0, 0.0),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .insert(RigidBody::Fixed)
+        .insert(Collider::cuboid(
+            SPRITE_TILE_WIDTH / 2.0,
+            SPRITE_TILE_HEIGHT / 2.0,
+        ))
+        .insert(Champi{
+            color: "red".to_string(),
+            direction: Direction::Right,
+            visible: false,
+        });
 }
