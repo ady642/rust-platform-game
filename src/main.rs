@@ -9,6 +9,7 @@ mod utils;
 mod entities {
     pub mod objects;
     pub mod champi;
+    pub mod mario;
 }
 
 use std::ops::Deref;
@@ -63,7 +64,6 @@ fn main() {
                 ..Default::default()
             }),
             RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(200.0),
-            RapierDebugRenderPlugin::default(),
             AnimationPlugin,
             SpriteManagerPlugin,
             PhysicsPlugin,

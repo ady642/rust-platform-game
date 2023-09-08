@@ -5,5 +5,6 @@ use crate::Direction;
 pub struct Champi {
     pub color: String,
     pub direction: Direction,
-    pub visible: bool
+    pub visible: bool,
+    pub upcoming: bool
 }

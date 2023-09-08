@@ -4,7 +4,6 @@ use crate::{Direction, WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGH
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use crate::entities::champi::Champi;
-use crate::utils::build_point;
 
 pub struct SpriteManagerPlugin;
 
@@ -93,7 +92,10 @@ fn setup(
             SPRITE_MARIO_HEIGHT / 2.0,
         ))
         .insert(KinematicCharacterController{
-            apply_impulse_to_dynamic_bodies: true,
+            filter_groups: Option::from(CollisionGroups::new(
+                Group::GROUP_2,
+                Group::ALL - Group::GROUP_3
+            )),
             ..Default::default()
         })
         .insert(Direction::Right)
@@ -228,7 +230,6 @@ fn apply_opened_block_sprite(
     }
 
     let (block_entity, block, mut sprite) = query.single_mut();
-    println!("block opened: {}", block.opened);
     if block.opened {
         commands.entity(block_entity).remove::<Animation>();
         sprite.index = SPRITE_IDX_BLOCK_OPENED;
@@ -237,13 +238,24 @@ fn apply_opened_block_sprite(
 
 fn add_champi(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut atlases: ResMut<Assets<TextureAtlas>>,
 ) {
+    let image_handle: Handle<Image> = asset_server.load("spritesheets/tiles.png");
+    let texture_atlas = TextureAtlas::from_grid(
+        image_handle,
+        Vec2::new(SPRITE_TILE_WIDTH, SPRITE_TILE_HEIGHT),
+        4,
+        2,
+        Option::from(Vec2::new(SPRITE_TILE_PADDING, SPRITE_TILE_PADDING_Y)),
+        Option::from(Vec2::new(8.0, 248.0)),
+    );
+    let atlas_handle = atlases.add(texture_atlas);
 
     commands
         .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(5),
-            texture_atlas: atlases.get_handle("spritesheets/tiles.png"),
+            texture_atlas: atlas_handle,
             transform: Transform {
                 scale: Vec3::new(
                     SPRITE_RENDER_WIDTH / SPRITE_MARIO_WIDTH,
@@ -256,6 +268,7 @@ fn add_champi(
             ..Default::default()
         })
         .insert(RigidBody::Fixed)
+        .insert(GravityScale(2.0))
         .insert(Collider::cuboid(
             SPRITE_TILE_WIDTH / 2.0,
             SPRITE_TILE_HEIGHT / 2.0,
@@ -264,5 +277,11 @@ fn add_champi(
             color: "red".to_string(),
             direction: Direction::Right,
             visible: false,
-        });
+            upcoming: false
+        })
+        .insert(CollisionGroups::new(
+            Group::GROUP_3,
+            Group::GROUP_1
+        ))
+    ;
 }

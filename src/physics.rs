@@ -1,7 +1,7 @@
 pub struct PhysicsPlugin;
 
 use crate::animation::Animation;
-use crate::{BG_WIDTH, Direction, Jump};
+use crate::{BG_WIDTH, Direction, Jump, WINDOW_BOTTOM_Y};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use std::time::Duration;
@@ -86,7 +86,7 @@ fn jump(
         commands.entity(player).insert(Jump(0.0));
         character_controller.filter_groups = Option::from(CollisionGroups::new(
             Group::GROUP_2,
-            Group::ALL - Group::GROUP_1,
+            Group::ALL - Group::GROUP_1 - Group::GROUP_3,
         ));
     }
 }
@@ -108,8 +108,8 @@ fn rise(
         movement = MAX_JUMP_HEIGHT - jump.0;
         commands.entity(entity).remove::<Jump>();
         player.filter_groups = Option::from(CollisionGroups::new(
-            Group::default(),
-            Group::default(),
+            Group::GROUP_2,
+            Group::ALL - Group::GROUP_3,
         ));
     }
 
@@ -241,15 +241,19 @@ pub fn world_to_vec() -> (Vec<Vec2>, Vec<[u32; 2]>) {
 }
 
 fn detect_collision_from_below_on_block(
-    mut query: Query<(Entity, &mut Block, &mut Champi)>,
-    mut character_controller_outputs: Query<&mut KinematicCharacterControllerOutput>
+    mut query: Query<(Entity, &mut Block)>,
+    mut character_controller_outputs: Query<&mut KinematicCharacterControllerOutput>,
+    mut champi_query: Query<&mut Champi>,
 ) {
-    for (entity, mut block, mut champi) in query.iter_mut() {
+    let mut champi = champi_query.single_mut();
+
+    for (entity, mut block) in query.iter_mut() {
         for mut output in character_controller_outputs.iter_mut() {
             for collision in &output.collisions {
                 if collision.entity == entity && collision.toi.normal1.y == -1.0 {
                         block.opened = true;
-                        //champi.visible = true;
+                        champi.visible = true;
+                        champi.upcoming = true
                 }
             }
         }
@@ -257,11 +261,22 @@ fn detect_collision_from_below_on_block(
 }
 
 fn apply_translation_to_champi(
-    mut query: Query<(&mut Transform, &Champi)>,
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut Transform, &mut Champi)>,
 ) {
-    for mut transform in query.iter_mut() {
-        if transform.1.visible {
-            transform.0.translation.x += 1.0;
+    for (entity, mut transform, mut champi) in query.iter_mut() {
+        if champi.visible {
+            if champi.upcoming {
+                transform.translation.y += 1.0;
+                if transform.translation.y >= WINDOW_BOTTOM_Y + 245.0 {
+                    champi.upcoming = false;
+                    commands.entity(entity).remove::<RigidBody>();
+                    commands.entity(entity).insert(RigidBody::Dynamic);
+                }
+            } else {
+                transform.translation.x += 1.0;
+                transform.rotation.w = 0.0
+            }
         }
     }
 }
