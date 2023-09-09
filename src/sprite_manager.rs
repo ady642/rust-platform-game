@@ -9,16 +9,13 @@ pub struct SpriteManagerPlugin;
 
 const SPRITESHEET_COLS: usize = 5;
 const SPRITESHEET_ROWS: usize = 2;
-const SPRITE_MARIO_WIDTH: f32 = 16.0;
-const SPRITE_MARIO_HEIGHT: f32 = 32.0;
+const SPRITE_MARIO_WIDTH: f32 = 13.0;
+const SPRITE_MARIO_HEIGHT: f32 = 23.0;
 
-const SPRITE_RENDER_WIDTH: f32 = 32.0;
-const SPRITE_RENDER_HEIGHT: f32 = 64.0;
-
-const SPRITE_OFFSET_X: f32 = 23.0;
-const SPRITE_OFFSET_Y: f32 = 583.0;
-const SPRITE_PADDING_X: f32 = 36.0;
-const SPRITE_PADDING_Y: f32 = 36.0;
+const SPRITE_OFFSET_X: f32 = 25.0;
+const SPRITE_OFFSET_Y: f32 = 49.0;
+const SPRITE_PADDING_X: f32 = 39.0;
+const SPRITE_PADDING_Y: f32 = 40.0;
 
 const SPRITE_IDX_STAND: usize = 0;
 const SPRITE_IDX_JUMP: usize = 6;
@@ -77,8 +74,8 @@ fn setup(
             texture_atlas: atlas_handle,
             transform: Transform {
                 scale: Vec3::new(
-                    SPRITE_RENDER_WIDTH / SPRITE_MARIO_WIDTH,
-                    SPRITE_RENDER_HEIGHT / SPRITE_MARIO_HEIGHT,
+                    2.0,
+                    2.0,
                     1.0,
                 ),
                 translation: Vec3::new(WINDOW_LEFT_X + 300.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
@@ -168,8 +165,6 @@ fn add_world_image(mut commands: Commands, asset_server: Res<AssetServer>) {
     });
 }
 
-
-
 fn add_block_to_world(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -196,8 +191,8 @@ fn add_block_to_world(
             texture_atlas: atlas_handle,
             transform: Transform {
                 scale: Vec3::new(
-                    SPRITE_RENDER_WIDTH / SPRITE_MARIO_WIDTH,
-                    SPRITE_RENDER_HEIGHT / SPRITE_MARIO_HEIGHT,
+                    2.0,
+                    2.0,
                     1.0,
                 ),
                 translation: Vec3::new(WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 224.0, 0.0),
@@ -258,8 +253,8 @@ fn add_champi(
             texture_atlas: atlas_handle,
             transform: Transform {
                 scale: Vec3::new(
-                    SPRITE_RENDER_WIDTH / SPRITE_MARIO_WIDTH,
-                    SPRITE_RENDER_HEIGHT / SPRITE_MARIO_HEIGHT,
+                    2.0,
+                    2.0,
                     1.0,
                 ),
                 translation: Vec3::new(WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 230.0, 0.0),
