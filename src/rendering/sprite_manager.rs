@@ -1,9 +1,11 @@
 use std::time::Duration;
-use crate::animation::Animation;
-use crate::{Direction, WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
+use crate::rendering::animation::Animation;
+use crate::{WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use crate::entities::champi::Champi;
+use crate::game_logic::entities::block::Block;
+use crate::game_logic::entities::champi::Champi;
+use crate::game_logic::entities::mario::{COLLISION_GROUPS_DEFAULT, Direction};
 
 pub struct SpriteManagerPlugin;
 
@@ -47,11 +49,6 @@ impl Plugin for SpriteManagerPlugin {
     }
 }
 
-#[derive(Component)] // TODO: Reflect
-pub struct Block {
-    pub opened: bool,
-}
-
 fn setup(
     mut commands: Commands,
     mut atlases: ResMut<Assets<TextureAtlas>>,
@@ -89,10 +86,7 @@ fn setup(
             SPRITE_MARIO_HEIGHT / 2.0,
         ))
         .insert(KinematicCharacterController{
-            filter_groups: Option::from(CollisionGroups::new(
-                Group::GROUP_2,
-                Group::ALL - Group::GROUP_3
-            )),
+            filter_groups: Option::from(COLLISION_GROUPS_DEFAULT),
             ..Default::default()
         })
         .insert(Direction::Right)
@@ -269,8 +263,6 @@ fn add_champi(
             SPRITE_TILE_HEIGHT / 2.0,
         ))
         .insert(Champi{
-            color: "red".to_string(),
-            direction: Direction::Right,
             visible: false,
             upcoming: false
         })
