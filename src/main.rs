@@ -73,7 +73,8 @@ fn main() {
 }
 
 fn setup(mut commands: Commands) {
-    let (vertices, indices) = world_to_vec();
+    let (vertices, indices) =
+        world_to_vec();
 
     commands
         .spawn(SpriteBundle {

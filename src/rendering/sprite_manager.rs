@@ -2,6 +2,7 @@ use std::time::Duration;
 use crate::rendering::animation::Animation;
 use crate::{WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
 use bevy::prelude::*;
+use bevy::prelude::Visibility::Hidden;
 use bevy_rapier2d::prelude::*;
 use crate::game_logic::entities::block::Block;
 use crate::game_logic::entities::champi::Champi;
@@ -245,6 +246,9 @@ fn add_champi(
         .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(5),
             texture_atlas: atlas_handle,
+            visibility: {
+                Hidden
+            },
             transform: Transform {
                 scale: Vec3::new(
                     2.0,

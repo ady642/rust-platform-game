@@ -1,6 +1,8 @@
 use std::time::Duration;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use bevy_rapier2d::rapier::prelude::ColliderType;
+use crate::game_logic::entities::champi::Champi;
 use crate::rendering::animation::Animation;
 
 pub const COLLISION_GROUPS_DEFAULT: CollisionGroups = CollisionGroups::new(
@@ -145,5 +147,30 @@ pub fn update_direction(
         commands.entity(player).insert(Direction::Right);
     } else if output.desired_translation.x < 0.0 {
         commands.entity(player).insert(Direction::Left);
+    }
+}
+
+pub fn detect_collision_with_champi(
+    mut commands: Commands,
+    query: Query<(Entity, &KinematicCharacterControllerOutput)>,
+    mut query_champi: Query<(Entity, &mut Champi)>,
+) {
+    if query.is_empty() {
+        return;
+    }
+
+    let (_, output) = query.single();
+
+    if output.collisions.is_empty() {
+        return;
+    }
+
+    for event in output.collisions.iter() {
+        for (champiEntity, mut champi) in query_champi.iter_mut() {
+            if champiEntity == event.entity {
+                champi.visible = false
+                // then change mario to be bigger
+            }
+        }
     }
 }
