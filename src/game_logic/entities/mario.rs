@@ -1,7 +1,6 @@
 use std::time::Duration;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
-use bevy_rapier2d::rapier::prelude::ColliderType;
 use crate::game_logic::entities::champi::Champi;
 use crate::rendering::animation::Animation;
 
@@ -24,6 +23,8 @@ const PLAYER_VELOCITY_Y: f32 = 850.0;
 const MAX_JUMP_HEIGHT: f32 = 230.0;
 const SPRITE_IDX_WALKING: &[usize] = &[0, 4, 3];
 const CYCLE_DELAY: Duration = Duration::from_millis(70);
+
+
 
 pub fn movement(
     input: Res<Input<KeyCode>>,
@@ -166,10 +167,13 @@ pub fn detect_collision_with_champi(
     }
 
     for event in output.collisions.iter() {
-        for (champiEntity, mut champi) in query_champi.iter_mut() {
-            if champiEntity == event.entity {
-                champi.visible = false
+        for (champi_entity, mut champi) in query_champi.iter_mut() {
+            if champi_entity == event.entity {
+                champi.visible = false;
+                commands.entity(champi_entity).remove::<Collider>();
                 // then change mario to be bigger
+
+
             }
         }
     }

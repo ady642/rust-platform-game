@@ -1,5 +1,4 @@
-use bevy::prelude::{Commands, Component, ComputedVisibility, Entity, Query, Transform, Visibility, VisibilityBundle, With};
-use bevy::prelude::Visibility::{Hidden, Visible};
+use bevy::prelude::{Commands, Component, Entity, Query, Transform, Visibility};
 use bevy_rapier2d::prelude::*;
 use crate::{WINDOW_BOTTOM_Y};
 
@@ -15,7 +14,7 @@ pub fn apply_translation_to_champi(
 ) {
     for (entity, mut transform, mut champi, mut visibility) in query.iter_mut() {
         if champi.visible {
-            *visibility = Visible;
+            *visibility = Visibility::Visible;
 
             if champi.upcoming {
                 transform.translation.y += 0.5;
@@ -29,7 +28,7 @@ pub fn apply_translation_to_champi(
                 transform.rotation.w = 0.0
             }
         } else {
-            *visibility = Hidden;
+            *visibility = Visibility::Hidden;
         }
     }
 }

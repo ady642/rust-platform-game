@@ -246,9 +246,7 @@ fn add_champi(
         .spawn(SpriteSheetBundle {
             sprite: TextureAtlasSprite::new(5),
             texture_atlas: atlas_handle,
-            visibility: {
-                Hidden
-            },
+            visibility: Hidden,
             transform: Transform {
                 scale: Vec3::new(
                     2.0,
@@ -270,9 +268,6 @@ fn add_champi(
             visible: false,
             upcoming: false
         })
-        .insert(CollisionGroups::new(
-            Group::GROUP_3,
-            Group::GROUP_1
-        ))
     ;
 }
+
