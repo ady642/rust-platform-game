@@ -2,23 +2,23 @@ use std::time::Duration;
 use crate::rendering::animation::Animation;
 use crate::{WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
 use bevy::prelude::*;
-use bevy::prelude::Visibility::Hidden;
+use bevy::prelude::Visibility::{Hidden, Visible};
 use bevy_rapier2d::prelude::*;
 use crate::game_logic::entities::block::Block;
 use crate::game_logic::entities::champi::Champi;
-use crate::game_logic::entities::mario::{COLLISION_GROUPS_DEFAULT, Direction};
+use crate::game_logic::entities::mario::{COLLISION_GROUPS_DEFAULT, Direction, Mario};
 
 pub struct SpriteManagerPlugin;
 
-const SPRITESHEET_COLS: usize = 5;
-const SPRITESHEET_ROWS: usize = 2;
+pub const SPRITESHEET_COLS: usize = 5;
+pub const SPRITESHEET_ROWS: usize = 2;
 const SPRITE_MARIO_WIDTH: f32 = 13.0;
 const SPRITE_MARIO_HEIGHT: f32 = 23.0;
 
-const SPRITE_OFFSET_X: f32 = 25.0;
-const SPRITE_OFFSET_Y: f32 = 49.0;
-const SPRITE_PADDING_X: f32 = 39.0;
-const SPRITE_PADDING_Y: f32 = 40.0;
+pub const SPRITE_OFFSET_X: f32 = 25.0;
+pub const SPRITE_OFFSET_Y: f32 = 49.0;
+pub const SPRITE_PADDING_X: f32 = 39.0;
+pub const SPRITE_PADDING_Y: f32 = 40.0;
 
 const SPRITE_IDX_STAND: usize = 0;
 const SPRITE_IDX_JUMP: usize = 6;
@@ -36,7 +36,8 @@ impl Plugin for SpriteManagerPlugin {
                 setup,
                 add_world_image,
                 add_block_to_world,
-                add_champi
+                add_champi,
+                //setup_big_mario
             ))
             .add_systems(
             Update,
@@ -67,32 +68,11 @@ fn setup(
     let atlas_handle = atlases.add(texture_atlas);
 
     commands
-        .spawn(SpriteSheetBundle {
-            sprite: TextureAtlasSprite::new(SPRITE_IDX_STAND),
-            texture_atlas: atlas_handle,
-            transform: Transform {
-                scale: Vec3::new(
-                    2.0,
-                    2.0,
-                    1.0,
-                ),
-                translation: Vec3::new(WINDOW_LEFT_X + 300.0, WINDOW_BOTTOM_Y + 300.0, 0.0),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::KinematicPositionBased)
-        .insert(Collider::cuboid(
-            SPRITE_MARIO_WIDTH / 2.0,
-            SPRITE_MARIO_HEIGHT / 2.0,
-        ))
-        .insert(KinematicCharacterController{
+        .spawn(Mario::new(atlas_handle, WINDOW_LEFT_X + 300.0, WINDOW_BOTTOM_Y + 300.0 ))
+        .insert(KinematicCharacterController {
             filter_groups: Option::from(COLLISION_GROUPS_DEFAULT),
             ..Default::default()
-        })
-        .insert(Direction::Right)
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(ActiveHooks::MODIFY_SOLVER_CONTACTS);
+        });
 }
 
 fn apply_jump_sprite(
@@ -107,10 +87,11 @@ fn apply_jump_sprite(
         return;
     }
 
-    let (player, output, mut sprite) = query.single_mut();
-    if !output.grounded {
-        commands.entity(player).remove::<Animation>();
-        sprite.index = SPRITE_IDX_JUMP
+    for (player, output, mut sprite) in query.iter_mut() {
+        if !output.grounded {
+            commands.entity(player).remove::<Animation>();
+            sprite.index = SPRITE_IDX_JUMP
+        }
     }
 }
 
@@ -126,10 +107,11 @@ fn apply_idle_sprite(
         return;
     }
 
-    let (player, output, mut sprite) = query.single_mut();
-    if output.desired_translation.x == 0.0 && output.grounded {
-        commands.entity(player).remove::<Animation>();
-        sprite.index = SPRITE_IDX_STAND
+    for (player, output, mut sprite) in query.iter_mut() {
+        if output.desired_translation.x == 0.0 && output.grounded {
+            commands.entity(player).remove::<Animation>();
+            sprite.index = SPRITE_IDX_STAND
+        }
     }
 }
 
@@ -138,11 +120,12 @@ fn update_sprite_direction(mut query: Query<(&mut TextureAtlasSprite, &Direction
         return;
     }
 
-    let (mut sprite, direction) = query.single_mut();
+    for (mut sprite, direction) in query.iter_mut() {
+        match direction {
+            Direction::Right => sprite.flip_x = true,
+            Direction::Left => sprite.flip_x = false,
+        }
 
-    match direction {
-        Direction::Right => sprite.flip_x = true,
-        Direction::Left => sprite.flip_x = false,
     }
 }
 
@@ -219,10 +202,11 @@ fn apply_opened_block_sprite(
         return;
     }
 
-    let (block_entity, block, mut sprite) = query.single_mut();
-    if block.opened {
-        commands.entity(block_entity).remove::<Animation>();
-        sprite.index = SPRITE_IDX_BLOCK_OPENED;
+    for (block_entity, block, mut sprite) in query.iter_mut() {
+        if block.opened {
+            commands.entity(block_entity).remove::<Animation>();
+            sprite.index = SPRITE_IDX_BLOCK_OPENED;
+        }
     }
 }
 
