@@ -211,7 +211,7 @@ pub fn detect_collision_with_champi(
 
         for event in output.collisions.iter() {
             for (champi_entity, transform_champi,mut champi) in query_champi.iter_mut() {
-                if champi_entity == event.entity {
+                if champi_entity == event.entity && champi.visible == true {
                     champi.visible = false;
                     commands.entity(champi_entity).remove::<Collider>();
                     commands.entity(mario_entity).insert(Big(0.0));
@@ -222,12 +222,13 @@ pub fn detect_collision_with_champi(
 }
 
 pub fn add_big_mario(
-    mut query: Query<(&mut Handle<TextureAtlas>), With<Big>>,
+    mut commands: Commands,
+    mut query: Query<(Entity, &mut Handle<TextureAtlas>), With<Big>>,
     mut atlases: ResMut<Assets<TextureAtlas>>,
     server: Res<AssetServer>,
 ) {
-    for (mut mario) in query.iter_mut() {
-        let image_handle: Handle<Image> = server.load("spritesheets/spritesheet_Mario.png");
+    for (mut mario_entity, mut mario_texture_atlas) in query.iter_mut() {
+        let image_handle: Handle<Image> = server.get_handle("spritesheets/spritesheet_Mario.png");
         let texture_atlas = TextureAtlas::from_grid(
             image_handle,
             Vec2::new(SPRITE_MARIO_WIDTH, SPRITE_BIG_MARIO_HEIGHT),
@@ -238,6 +239,12 @@ pub fn add_big_mario(
         );
         let atlas_handle = atlases.add(texture_atlas);
 
-        *mario = atlas_handle;
+        *mario_texture_atlas = atlas_handle;
+
+        commands.entity(mario_entity).remove::<Collider>();
+        commands.entity(mario_entity).insert(Collider::cuboid(
+            SPRITE_MARIO_WIDTH / 2.0,
+            SPRITE_BIG_MARIO_HEIGHT / 2.0,
+        ));
     }
 }

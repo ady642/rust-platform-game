@@ -216,7 +216,7 @@ fn add_champi(
     asset_server: Res<AssetServer>,
     mut atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    let image_handle: Handle<Image> = asset_server.load("spritesheets/tiles.png");
+    let image_handle: Handle<Image> = asset_server.get_handle("spritesheets/tiles.png");
     let texture_atlas = TextureAtlas::from_grid(
         image_handle,
         Vec2::new(SPRITE_TILE_WIDTH, SPRITE_TILE_HEIGHT),
