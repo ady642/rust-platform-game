@@ -1,9 +1,9 @@
 use std::time::Duration;
+use bevy::ecs::bundle::DynamicBundle;
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use crate::game_logic::entities::champi::Champi;
 use crate::rendering::animation::Animation;
-use crate::{WINDOW_BOTTOM_Y, WINDOW_LEFT_X};
 use crate::rendering::sprite_manager::{SPRITE_OFFSET_X, SPRITE_PADDING_X, SPRITE_PADDING_Y, SPRITESHEET_COLS, SPRITESHEET_ROWS};
 
 pub const COLLISION_GROUPS_DEFAULT: CollisionGroups = CollisionGroups::new(
@@ -19,6 +19,9 @@ pub enum Direction {
 
 #[derive(Component)]
 pub struct Jump(f32);
+
+#[derive(Component)]
+pub struct Big(f32);
 
 const PLAYER_VELOCITY_X: f32 = 400.0;
 const PLAYER_VELOCITY_Y: f32 = 850.0;
@@ -196,8 +199,6 @@ pub fn detect_collision_with_champi(
     mut commands: Commands,
     query: Query<(Entity, &KinematicCharacterControllerOutput)>,
     mut query_champi: Query<(Entity, &mut Transform, &mut Champi)>,
-    mut atlases: ResMut<Assets<TextureAtlas>>,
-    server: Res<AssetServer>,
 ) {
     if query.is_empty() {
         return;
@@ -213,29 +214,30 @@ pub fn detect_collision_with_champi(
                 if champi_entity == event.entity {
                     champi.visible = false;
                     commands.entity(champi_entity).remove::<Collider>();
-                    // then change mario to be bigger
-
-                    let image_handle: Handle<Image> = server.load("spritesheets/spritesheet_Mario.png");
-                    let texture_atlas = TextureAtlas::from_grid(
-                        image_handle,
-                        Vec2::new(SPRITE_MARIO_WIDTH, SPRITE_BIG_MARIO_HEIGHT),
-                        SPRITESHEET_COLS,
-                        SPRITESHEET_ROWS,
-                        Option::from(Vec2::new(SPRITE_PADDING_X, SPRITE_PADDING_Y)),
-                        Option::from(Vec2::new(SPRITE_OFFSET_X, 584.0)),
-                    );
-                    let atlas_handle = atlases.add(texture_atlas);
-
-                    commands
-                        .spawn(Mario::new(atlas_handle, transform_champi.translation.x, transform_champi.translation.y))
-                        .insert(KinematicCharacterController {
-                            filter_groups: Option::from(COLLISION_GROUPS_DEFAULT),
-                            ..Default::default()
-                        });
-
-                    commands.entity(mario_entity).despawn();
+                    commands.entity(mario_entity).insert(Big(0.0));
                 }
             }
         }
+    }
+}
+
+pub fn add_big_mario(
+    mut query: Query<(&mut Handle<TextureAtlas>), With<Big>>,
+    mut atlases: ResMut<Assets<TextureAtlas>>,
+    server: Res<AssetServer>,
+) {
+    for (mut mario) in query.iter_mut() {
+        let image_handle: Handle<Image> = server.load("spritesheets/spritesheet_Mario.png");
+        let texture_atlas = TextureAtlas::from_grid(
+            image_handle,
+            Vec2::new(SPRITE_MARIO_WIDTH, SPRITE_BIG_MARIO_HEIGHT),
+            SPRITESHEET_COLS,
+            SPRITESHEET_ROWS,
+            Option::from(Vec2::new(SPRITE_PADDING_X, SPRITE_PADDING_Y)),
+            Option::from(Vec2::new(SPRITE_OFFSET_X, 584.0)),
+        );
+        let atlas_handle = atlases.add(texture_atlas);
+
+        *mario = atlas_handle;
     }
 }

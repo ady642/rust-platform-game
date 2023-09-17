@@ -75,6 +75,7 @@ fn setup(
         });
 }
 
+
 fn apply_jump_sprite(
     mut commands: Commands,
     mut query: Query<(

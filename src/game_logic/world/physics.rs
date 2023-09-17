@@ -4,7 +4,7 @@ use crate::{BG_WIDTH};
 use bevy::prelude::*;
 use crate::game_logic::entities::block::{detect_collision_from_below_on_block};
 use crate::game_logic::entities::champi::{apply_translation_to_champi};
-use crate::game_logic::entities::mario::{apply_movement_animation, detect_collision_with_champi, fall, jump, movement, rise, update_direction};
+use crate::game_logic::entities::mario::{add_big_mario, apply_movement_animation, detect_collision_with_champi, fall, jump, movement, rise, update_direction};
 use crate::utils::build_point;
 
 const SPRITE_TILE_WIDTH: f32 = 16.0;
@@ -24,7 +24,8 @@ impl Plugin for PhysicsPlugin {
                 update_direction,
                 detect_collision_from_below_on_block,
                 apply_translation_to_champi,
-                detect_collision_with_champi
+                detect_collision_with_champi,
+                add_big_mario
             ),
         );
     }
