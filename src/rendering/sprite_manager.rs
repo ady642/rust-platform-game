@@ -4,7 +4,7 @@ use crate::{WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
 use bevy::prelude::*;
 use bevy::prelude::Visibility::{Hidden, Visible};
 use bevy_rapier2d::prelude::*;
-use crate::game_logic::entities::block::Block;
+use crate::game_logic::entities::block::{Block, BlockFactory};
 use crate::game_logic::entities::champi::Champi;
 use crate::game_logic::entities::mario::{COLLISION_GROUPS_DEFAULT, Direction, Mario};
 
@@ -24,8 +24,8 @@ const SPRITE_IDX_STAND: usize = 0;
 const SPRITE_IDX_JUMP: usize = 6;
 const SPRITE_IDX_BLOCK_OPENED: usize = 4;
 
-const SPRITE_TILE_WIDTH: f32 = 15.0;
-const SPRITE_TILE_HEIGHT: f32 = 15.0;
+pub const SPRITE_TILE_WIDTH: f32 = 15.0;
+pub const SPRITE_TILE_HEIGHT: f32 = 15.0;
 const SPRITE_TILE_PADDING: f32 = 9.0;
 const SPRITE_TILE_PADDING_Y: f32 = 6.0;
 
@@ -160,35 +160,14 @@ fn add_block_to_world(
     );
     let atlas_handle = atlases.add(texture_atlas);
 
-    const CYCLE_DELAY: Duration = Duration::from_millis(500);
-
-    const SPRITE_IDX_ANIM: &[usize] = &[0, 1, 2, 3];
+    // Clone atlas_handle for each spawn call
+    let atlas_handle1 = atlas_handle.clone();
+    let atlas_handle2 = atlas_handle.clone();
 
     commands
-        .spawn(SpriteSheetBundle {
-            sprite: TextureAtlasSprite::new(SPRITE_IDX_STAND),
-            texture_atlas: atlas_handle,
-            transform: Transform {
-                scale: Vec3::new(
-                    2.0,
-                    2.0,
-                    1.0,
-                ),
-                translation: Vec3::new(WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 224.0, 0.0),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(RigidBody::Fixed)
-        .insert(Collider::cuboid(
-            SPRITE_TILE_WIDTH / 2.0,
-            SPRITE_TILE_HEIGHT / 2.0,
-        ))
-        .insert(Block{
-            opened: false
-        })
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Animation::new(SPRITE_IDX_ANIM, CYCLE_DELAY));
+        .spawn(BlockFactory::new(atlas_handle1, WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 224.0 ));
+    commands
+        .spawn(BlockFactory::new(atlas_handle2, WINDOW_LEFT_X + 1712.0, WINDOW_BOTTOM_Y + 176.0 ));
 }
 
 fn apply_opened_block_sprite(
