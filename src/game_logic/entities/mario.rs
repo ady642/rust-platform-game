@@ -213,7 +213,8 @@ pub fn detect_collision_with_champi(
             for (champi_entity, transform_champi,mut champi) in query_champi.iter_mut() {
                 if champi_entity == event.entity && champi.visible == true {
                     champi.visible = false;
-                    commands.entity(champi_entity).remove::<Collider>();
+                    commands.entity(champi_entity).despawn();
+
                     commands.entity(mario_entity).insert(Big(0.0));
                 }
             }
