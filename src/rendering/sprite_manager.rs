@@ -37,7 +37,6 @@ impl Plugin for SpriteManagerPlugin {
                 add_world_image,
                 add_block_to_world,
                 add_champi,
-                //setup_big_mario
             ))
             .add_systems(
             Update,
@@ -160,17 +159,16 @@ fn add_block_to_world(
     );
     let atlas_handle = atlases.add(texture_atlas);
 
-    // Clone atlas_handle for each spawn call
     let atlas_handle1 = atlas_handle.clone();
     let atlas_handle2 = atlas_handle.clone();
     let atlas_handle3 = atlas_handle.clone();
 
     commands
-        .spawn(BlockFactory::new(atlas_handle1, WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 224.0 ));
+        .spawn(BlockFactory::new(1, atlas_handle1, WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 224.0 ));
     commands
-        .spawn(BlockFactory::new(atlas_handle2, WINDOW_LEFT_X + 1712.0, WINDOW_BOTTOM_Y + 176.0 ));
+        .spawn(BlockFactory::new(2, atlas_handle2, WINDOW_LEFT_X + 1712.0, WINDOW_BOTTOM_Y + 176.0 ));
     commands
-        .spawn(BlockFactory::new(atlas_handle3, WINDOW_LEFT_X + 1912.0, WINDOW_BOTTOM_Y + 176.0 ));
+        .spawn(BlockFactory::new(3, atlas_handle3, WINDOW_LEFT_X + 1744.0, WINDOW_BOTTOM_Y + 176.0 ));
 }
 
 fn apply_opened_block_sprite(
@@ -215,12 +213,12 @@ fn add_champi(
     let atlas_handle2 = atlas_handle.clone();
 
     commands
-        .spawn(ChampiFactory::new(atlas_handle, WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 230.0));
+        .spawn(ChampiFactory::new(1, atlas_handle, WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 230.0));
 
     commands
-        .spawn(ChampiFactory::new(atlas_handle1, WINDOW_LEFT_X + 1712.0, WINDOW_BOTTOM_Y + 176.0));
+        .spawn(ChampiFactory::new(2, atlas_handle1, WINDOW_LEFT_X + 1712.0, WINDOW_BOTTOM_Y + 176.0));
 
     commands
-        .spawn(ChampiFactory::new(atlas_handle2, WINDOW_LEFT_X + 1722.0, WINDOW_BOTTOM_Y + 176.0));
+        .spawn(ChampiFactory::new(3, atlas_handle2, WINDOW_LEFT_X + 1744.0, WINDOW_BOTTOM_Y + 176.0));
 }
 

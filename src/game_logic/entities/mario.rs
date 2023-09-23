@@ -208,7 +208,6 @@ pub fn detect_collision_with_champi(
         if output.collisions.is_empty() {
             return;
         }
-
         for event in output.collisions.iter() {
             for (champi_entity, transform_champi,mut champi) in query_champi.iter_mut() {
                 if champi_entity == event.entity && champi.visible == true {

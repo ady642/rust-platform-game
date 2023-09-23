@@ -1,0 +1,51 @@
+diff --git a/src/game_logic/entities/mario.rs b/src/game_logic/entities/mario.rs
+index 967545f..5558852 100644
+--- a/src/game_logic/entities/mario.rs
++++ b/src/game_logic/entities/mario.rs
+@@ -1,6 +1,7 @@
+ use std::time::Duration;
+ use bevy::ecs::bundle::DynamicBundle;
+ use bevy::prelude::*;
++use bevy::utils::HashSet;
+ use bevy_rapier2d::prelude::*;
+ use crate::game_logic::entities::champi::Champi;
+ use crate::rendering::animation::Animation;
+@@ -200,25 +201,23 @@ pub fn detect_collision_with_champi(
+     query: Query<(Entity, &KinematicCharacterControllerOutput)>,
+     mut query_champi: Query<(Entity, &mut Transform, &mut Champi)>,
+ ) {
+-    if query.is_empty() {
+-        return;
+-    }
++    // Create a HashSet to store collided champi entities for faster lookup.
++    let mut champi_entities = HashSet::new();
+ 
+-    for (mario_entity, output) in query.iter() {
+-        if output.collisions.is_empty() {
+-            return;
+-        }
++    // Populate champi_entities set with the entities that had collisions.
++    for (_, output) in query.iter() {
++        champi_entities.extend(output.collisions.iter().map(|event| event.entity));
++    }
+ 
+-        for event in output.collisions.iter() {
+-            for (champi_entity, transform_champi,mut champi) in query_champi.iter_mut() {
+-                if champi_entity == event.entity && champi.visible == true {
+-                    champi.visible = false;
+-                    commands.entity(champi_entity).remove::<Collider>();
+-                    commands.entity(mario_entity).insert(Big(0.0));
+-                }
+-            }
++    for (champi_entity, transform_champi, mut champi) in query_champi.iter_mut() {
++        // Check if this champi_entity had a collision.
++        if champi_entities.contains(&champi_entity) && champi.visible {
++            champi.visible = false;
++            commands.entity(champi_entity).remove::<Collider>();
+         }
+     }
++
++    // You can add logic here to insert Big(0.0) into the Mario entity outside the loop.
+ }
+ 
+ pub fn add_big_mario(

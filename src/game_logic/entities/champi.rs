@@ -4,11 +4,11 @@ use bevy::prelude::*;
 use bevy::prelude::Visibility::Hidden;
 use bevy::sprite::SpriteSheetBundle;
 use bevy_rapier2d::prelude::*;
-use crate::{WINDOW_BOTTOM_Y};
 use crate::rendering::sprite_manager::{SPRITE_TILE_HEIGHT, SPRITE_TILE_WIDTH};
 
 #[derive(Component)]
 pub struct Champi {
+    pub block_id: i32,
     pub visible: bool,
     pub upcoming: bool,
     pub upcoming_height: f32,
@@ -24,7 +24,7 @@ pub struct ChampiFactory {
 }
 
 impl ChampiFactory {
-    pub fn new(texture_atlas: Handle<TextureAtlas>, x: f32, y: f32) -> Self {
+    pub fn new(block_id: i32, texture_atlas: Handle<TextureAtlas>, x: f32, y: f32) -> Self {
         const CYCLE_DELAY: Duration = Duration::from_millis(500);
 
         const SPRITE_IDX_ANIM: &[usize] = &[0, 1, 2, 3];
@@ -51,6 +51,7 @@ impl ChampiFactory {
             ),
             gravity: GravityScale(2.0),
             champi: Champi {
+                block_id,
                 visible: false,
                 upcoming: false,
                 upcoming_height: y + SPRITE_TILE_HEIGHT * 2.0,
@@ -69,8 +70,6 @@ pub fn apply_translation_to_champi(
 
             if champi.upcoming {
                 transform.translation.y += 0.5;
-
-                println!("{} {}", transform.translation.y, champi.upcoming_height);
 
                 if transform.translation.y >= champi.upcoming_height {
                     champi.upcoming = false;
