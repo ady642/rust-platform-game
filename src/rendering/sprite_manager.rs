@@ -167,8 +167,6 @@ fn add_block_to_world(
         .spawn(BlockFactory::new(1, atlas_handle1, WINDOW_LEFT_X + 1216.0, WINDOW_BOTTOM_Y + 224.0 ));
     commands
         .spawn(BlockFactory::new(2, atlas_handle2, WINDOW_LEFT_X + 1712.0, WINDOW_BOTTOM_Y + 176.0 ));
-    commands
-        .spawn(BlockFactory::new(3, atlas_handle3, WINDOW_LEFT_X + 1744.0, WINDOW_BOTTOM_Y + 176.0 ));
 }
 
 fn apply_opened_block_sprite(
@@ -217,8 +215,5 @@ fn add_champi(
 
     commands
         .spawn(ChampiFactory::new(2, atlas_handle1, WINDOW_LEFT_X + 1712.0, WINDOW_BOTTOM_Y + 176.0));
-
-    commands
-        .spawn(ChampiFactory::new(3, atlas_handle2, WINDOW_LEFT_X + 1744.0, WINDOW_BOTTOM_Y + 176.0));
 }
 
