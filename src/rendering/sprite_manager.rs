@@ -4,7 +4,7 @@ use crate::{WINDOW_BOTTOM_Y, WINDOW_LEFT_X, SCALE, BG_WIDTH, BG_HEIGHT};
 use bevy::prelude::*;
 use bevy::prelude::Visibility::{Hidden, Visible};
 use bevy_rapier2d::prelude::*;
-use crate::game_logic::entities::block::{Block, BlockFactory};
+use crate::game_logic::entities::block::{Block, BlockFactory, Opened};
 use crate::game_logic::entities::champi::{Champi, ChampiFactory};
 use crate::game_logic::entities::mario::{COLLISION_GROUPS_DEFAULT, Direction, Mario};
 
@@ -175,17 +175,15 @@ fn apply_opened_block_sprite(
         Entity,
         &Block,
         &mut TextureAtlasSprite,
-    )>,
+    ), With<Opened>>,
 ) {
     if query.is_empty() {
         return;
     }
 
     for (block_entity, block, mut sprite) in query.iter_mut() {
-        if block.opened {
-            commands.entity(block_entity).remove::<Animation>();
-            sprite.index = SPRITE_IDX_BLOCK_OPENED;
-        }
+        commands.entity(block_entity).remove::<Animation>();
+        sprite.index = SPRITE_IDX_BLOCK_OPENED;
     }
 }
 

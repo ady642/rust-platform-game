@@ -7,6 +7,9 @@ use crate::rendering::animation::Animation;
 use crate::rendering::sprite_manager::{SPRITE_TILE_HEIGHT, SPRITE_TILE_WIDTH};
 
 #[derive(Component)]
+pub struct Opened(f32);
+
+#[derive(Component)]
 pub struct Block {
     id: i32,
     pub opened: bool,
@@ -57,7 +60,7 @@ impl BlockFactory {
 
 pub fn detect_collision_from_below_on_block(
     mut commands: Commands,
-    mut query: Query<(Entity, &mut Block)>,
+    mut query: Query<(Entity, &mut Block), Without<Opened>>,
     mut character_controller_outputs: Query<&mut KinematicCharacterControllerOutput>,
     mut champi_query: Query<&mut Champi>,
 ) {
@@ -71,8 +74,9 @@ pub fn detect_collision_from_below_on_block(
                 for collision in &output.collisions {
                     println!("collision entity: {:?}", collision.entity);
                     println!("entity: {:?}", entity);
-                    if collision.entity == entity && collision.toi.normal1.y == -1.0 {
-                        block.opened = true;
+                    println!("collision toi: {:?}", collision.toi);
+                    if collision.toi.normal1.y == -1.0 {
+                        commands.entity(entity).insert(Opened(0.0));
                         if block.id == champi.block_id {
                             champi.visible = true;
                             champi.upcoming = true;
