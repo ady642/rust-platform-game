@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use std::time::Duration;
 use bevy::asset::Handle;
 use bevy::prelude::*;

@@ -72,9 +72,6 @@ pub fn detect_collision_from_below_on_block(
         for (entity, mut block) in query.iter_mut() {
             for mut output in character_controller_outputs.iter_mut() {
                 for collision in &output.collisions {
-                    println!("collision entity: {:?}", collision.entity);
-                    println!("entity: {:?}", entity);
-                    println!("collision toi: {:?}", collision.toi);
                     if collision.toi.normal1.y == -1.0 {
                         commands.entity(entity).insert(Opened(0.0));
                         if block.id == champi.block_id {
